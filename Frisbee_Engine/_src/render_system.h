@@ -19,8 +19,12 @@ namespace fengine {
 			struct GlobalUbo {
 				glm::mat4 projectionViewMatrix{ 1.0f };
 				glm::vec3 LightPos = glm::vec3(1.0f, -4.0f, -1.0f);
-				//glm::vec3 directionToLight = glm::normalize(glm::vec3(1.0f, -3.0f, -1.0f));
 				alignas(16) glm::vec3 camPos = {};
+
+				alignas(16) glm::vec3 albedo { 1.0, 0.0, 0.0 };
+				float metallic = 0.0;
+				float roughness = 0.3;
+				float ao = 0.02;
 			};
 
 			struct SimplePushConstantData {
