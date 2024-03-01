@@ -100,7 +100,7 @@ namespace fengine {
 		int i = 0;
 		for (auto& obj : gameObjects)
 		{
-			if (i > 0)
+			if (!GlobalData::getInstance().isWireFrame && i > 0)
 				m_fPipelineWhite->bind(frameInfo.commandBuffer);
 			i++;
 			//auto uiInputData = m_draw->GetUIInputData();

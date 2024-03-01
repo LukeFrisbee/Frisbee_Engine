@@ -105,6 +105,12 @@ namespace fengine {
 				ubo.projectionViewMatrix = camera.getProjection() * camera.getView();
 				ubo.camPos = cameraObject.transform.translation;
 				ubo.LightPos = m_gameObjects[1].transform.translation;
+
+				ubo.albedo = globalData.albedo;
+				ubo.roughness = globalData.roughness;
+				ubo.metallic = globalData.metallic;
+				ubo.ao = globalData.ao;
+
 				uboBuffers[frameIndex]->writeToBuffer(&ubo);
 				//uboBuffers[frameIndex]->flush(); // HOST_COHERENT_BIT is on, flushing automatic
 

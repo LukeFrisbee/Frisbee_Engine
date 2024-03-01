@@ -12,6 +12,12 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
 	mat4 projectionViewMatrix;
 	vec3 lightPos;
 	vec3 camPos;
+
+	// pbr
+	vec3 albedo;
+	float metallic;
+	float roughness;
+	float ao;
 } ubo;
 
 // push

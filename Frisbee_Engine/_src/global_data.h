@@ -14,13 +14,19 @@ namespace fengine {
 	// SINGLETON
 	class GlobalData {
 	public:
+
 		// DATA
 		int fps{};
 		std::string swapPresetMode{};
 		bool isWireFrame = false;
 		glm::vec3 camPos{};
 		glm::vec3 camRot{};
-		// ====
+
+		// PBR
+		glm::vec3 albedo{ 1.0, 0.0, 0.0 };
+		float metallic = 0.0;
+		float roughness = 0.3;
+		float ao = 0.02;
 
 		static GlobalData& getInstance()
 		{

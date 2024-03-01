@@ -17,8 +17,8 @@ namespace fengine {
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 
 		// Config
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 		//io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
 		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
 		//io.ConfigViewportsNoAutoMerge = true;
@@ -82,9 +82,9 @@ namespace fengine {
 	void FImguiDraw::SettingsWindow(ImGuiIO& io, GlobalData& globalData)
 	{
 		ImGui::Begin("Settings");
-		ImGui::SetWindowPos({ 5, 5 }, ImGuiCond_Once);
-		auto width = io.DisplaySize.x / 4.5f;
-		auto height = io.DisplaySize.y / 2.0f;
+		ImGui::SetWindowPos({ 10, 10 }, ImGuiCond_Once);
+		auto width = io.DisplaySize.x / 3.8f;
+		auto height = io.DisplaySize.y / 1.5f;
 		ImGui::SetWindowSize({ width, height }, ImGuiCond_Once);
 
 		// Info
@@ -103,6 +103,15 @@ namespace fengine {
 		// Pipeline
 		if (ImGui::CollapsingHeader("Pipeline", ImGuiTreeNodeFlags_DefaultOpen))
 		{
+			ImGui::ColorEdit4("Color", (float*)&globalData.albedo);
+
+			ImGui::DragFloat("Roughness", &globalData.roughness, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("Metallic", &globalData.metallic, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("Ao", &globalData.ao, 0.01f, 0.0f, 1.0f);
+
+			float metallic = 0.0;
+			float roughness = 0.3;
+			float ao = 0.02;
 			ImGui::Checkbox("Wireframe", &globalData.isWireFrame);
 		}
 
