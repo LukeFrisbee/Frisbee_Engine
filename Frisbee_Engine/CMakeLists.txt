@@ -20,13 +20,13 @@ add_custom_target(ShadersTarget DEPENDS ${SHADER_OUTPUTS})
 # ^ SHADERS
 
 # GLM
-include_directories("glm")
+include_directories("vendor/glm")
 
 # TinyObjLoad
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tinyobjloader)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/vendor/tinyobjloader)
 
 # GLFW
-set(GLFW_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glfw-3.3.9)
+set(GLFW_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/glfw-3.3.9)
 option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
 option(GLFW_BUILD_TESTS "Build the GLFW test programs" OFF)
 option(GLFW_BUILD_DOCS "Build the GLFW documentation" OFF)
@@ -41,7 +41,7 @@ find_package(Vulkan REQUIRED)
 set(LIBRARIES "glfw;Vulkan::Vulkan")
 
 # IMGUI
-set(IMGUI_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
+set(IMGUI_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui)
 file(GLOB IMGUI_SOURCES ${IMGUI_INCLUDE_DIR}/*.cpp ${IMGUI_INCLUDE_DIR}/*.h) 
 add_library("imgui" STATIC ${IMGUI_SOURCES})
 target_include_directories("imgui" PUBLIC ${IMGUI_INCLUDE_DIR})
