@@ -1,6 +1,14 @@
 #pragma once
 
 #include <string>
+#include "glm/glm.hpp"
+
+/*
+TODO:
+
+			Temporary Singleton for displaying Debug information
+
+*/
 
 namespace fengine {
 	// SINGLETON
@@ -10,6 +18,8 @@ namespace fengine {
 		int fps{};
 		std::string swapPresetMode{};
 		bool isWireFrame = false;
+		glm::vec3 camPos{};
+		glm::vec3 camRot{};
 		// ====
 
 		static GlobalData& getInstance()

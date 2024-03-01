@@ -6,6 +6,7 @@
 #include "window.h"
 #include "renderer.h"
 #include "game_object.h"
+#include "descriptors.h"
 
 namespace fengine { 
 	class App {
@@ -28,7 +29,7 @@ namespace fengine {
 		Device m_device{ m_window };
 		Renderer m_renderer{ m_window, m_device };
 
-		VkPipelineLayout m_pipelineLayout;
+		std::unique_ptr<DescriptorPool> m_globalDescriptorPool;
 		std::vector<GameObject> m_gameObjects;
 	};
 }

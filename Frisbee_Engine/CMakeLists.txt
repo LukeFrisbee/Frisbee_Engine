@@ -1,6 +1,6 @@
 ﻿# SHADERS
 # Define shader source file paths
-file(GLOB_RECURSE SHADER_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/_src/shaders/*.vert" "${CMAKE_CURRENT_SOURCE_DIR}/_src/shaders/*.frag")
+file(GLOB_RECURSE SHADER_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.vert" "${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.frag")
 
 # Add custom commands and targets for shader compilation
 foreach(SHADER_SOURCE ${SHADER_SOURCES})

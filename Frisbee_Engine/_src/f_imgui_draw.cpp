@@ -7,6 +7,8 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
 
+#include "glm/gtx/string_cast.hpp"
+
 namespace fengine {
 	FImguiDraw::FImguiDraw(FWindow& window, Device& device, uint32_t imageCount, VkRenderPass renderPass)
 	{
@@ -90,6 +92,12 @@ namespace fengine {
 		{
 			auto fpsText = "FPS: " + std::to_string(globalData.fps);
 			ImGui::Text(fpsText.c_str());
+
+			ImGui::Text("Camera Position:");
+			ImGui::Text(glm::to_string(globalData.camPos).c_str());
+
+			ImGui::Text("Camera Rotation:");
+			ImGui::Text(glm::to_string(globalData.camRot).c_str());
 		}
 
 		// Pipeline
