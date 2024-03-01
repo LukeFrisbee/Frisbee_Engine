@@ -10,11 +10,6 @@
 #include "global_data.h"
 #include "buffer.h"
 
-struct GlobalUbo {
-	glm::mat4 projectionViewMatrix { 1.0f };
-	glm::vec3 directionToLight = glm::normalize(glm::vec3(1.0f, -3.0f, -1.0f));
-};
-
 namespace fengine {
 	App::App() {
 		m_globalDescriptorPool = DescriptorPool::Builder(m_device)
@@ -34,7 +29,7 @@ namespace fengine {
 		{
 			uboBuffers[i] = std::make_unique<Buffer>(
 				m_device,
-				sizeof(GlobalUbo),
+				sizeof(RenderSystem::GlobalUbo),
 				1,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -46,7 +41,7 @@ namespace fengine {
 		// Descriptor Sets
 		auto globalSetLayout =
 			DescriptorSetLayout::Builder(m_device)
-			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
 			.build();
 
 		std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -99,27 +94,27 @@ namespace fengine {
 			float aspect = m_renderer.getAspectRatio();
 			camera.setPerspectiveProject(glm::radians(60.0f), aspect, 0.1f, 100.0f);
 
-
-
-			// RENDER LOOP
+			// RENDER
 			if (auto commandBuffer = m_renderer.beginFrame()) {
+
 				int frameIndex = m_renderer.getFrameIndex();
 				FrameInfo frameInfo{ frameIndex, frameTime, commandBuffer, camera, globalDescriptorSets[frameIndex]};
 
-				// update
-				GlobalUbo ubo{};
+				// UBO
+				RenderSystem::GlobalUbo ubo{};
 				ubo.projectionViewMatrix = camera.getProjection() * camera.getView();
+				ubo.camPos = cameraObject.transform.translation;
+				ubo.LightPos = m_gameObjects[1].transform.translation;
 				uboBuffers[frameIndex]->writeToBuffer(&ubo);
 				//uboBuffers[frameIndex]->flush(); // HOST_COHERENT_BIT is on, flushing automatic
 
-				// render (draw calls)
+				// RENDER 
 				m_renderer.beginRenderPass(commandBuffer);
-
 				renderSystem.renderGameObjects(frameInfo, m_gameObjects);
-
 				m_renderer.endRenderPass(commandBuffer);
 				m_renderer.endFrame();
 			}
+
 			fpsCounter++;
 		}
 
@@ -130,15 +125,26 @@ namespace fengine {
 
 	void App::loadGameObjects()
 	{
+		// JEEP
 		std::shared_ptr<Model> model = Model::createModelFromFile(m_device, 
 			"C:\\Users\\lukeb\\_Projects\\C++\\Frisbee_Engine\\Frisbee_Engine\\models\\jeep.obj");
-		//auto Model = std::make_shared<Model>(m_device, vertices);
 
-		auto gameObject = GameObject::createGameObject();
-		gameObject.model = model;
-		gameObject.transform.translation = { 0.0f, 0.0f, 1.0f };
+		auto jeep = GameObject::createGameObject();
+		jeep.model = model;
+		jeep.transform.translation = { 0.0f, 0.0f, 0.0f };
 		//gameObject.transform.scale = { 2.0f, 2.0f, 2.0f };
-		gameObject.transform.rotation = { glm::radians(180.0f), 0.0f, 0.0f };
-		m_gameObjects.push_back(std::move(gameObject));
+		jeep.transform.rotation = { glm::radians(180.0f), 0.0f, 0.0f };
+		m_gameObjects.push_back(std::move(jeep));
+
+		// CUBE
+		model = Model::createModelFromFile(m_device,
+			"C:\\Users\\lukeb\\_Projects\\C++\\Frisbee_Engine\\Frisbee_Engine\\models\\cube.obj");
+
+		auto cube = GameObject::createGameObject();
+		cube.model = model;
+		cube.transform.translation = { 1.0f, -3.0f, -1.0f };
+		cube.transform.scale = { 0.25f, 0.25f, 0.25f };
+		//cube.transform.rotation = { glm::radians(180.0f), 0.0f, 0.0f };
+		m_gameObjects.push_back(std::move(cube));
 	}
 }

@@ -7,7 +7,8 @@ layout (location = 2) in vec2 uv;
 // descriptor set
 layout(set = 0, binding = 0) uniform GlobalUbo {
 	mat4 projectionViewMatrix;
-	vec3 directionToLight;
+	vec3 lightPos;
+    vec3 camPos;
 } ubo;
 
 // push

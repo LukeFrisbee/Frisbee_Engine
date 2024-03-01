@@ -27,6 +27,7 @@ void main()
 
 	vec3 normalWorldSpace = normalize(push.normalMatrix * vec4(normal, 0.0)).xyz;
 	float lightIntensity = max(dot(normalWorldSpace, ubo.directionToLight), 0);
+
 	vec3 vertexColor = AMBIENT + lightIntensity * vec3(1.0, 1.0, 1.0);
 	fragColor = clamp(vertexColor, 0.0, 1.0);
 }

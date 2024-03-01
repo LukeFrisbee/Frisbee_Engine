@@ -12,12 +12,6 @@
 #include "global_data.h"
 
 namespace fengine {
-	struct SimplePushConstantData {
-		glm::mat4 modelMatrix{ 1.0f };
-		glm::mat4 normalMatrix{ 1.0f };
-		//alignas(16) glm::vec3 Color{};
-	};
-
 	RenderSystem::RenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout)
 		: m_device { device } 
 	{
@@ -61,22 +55,28 @@ namespace fengine {
 		pipelineConfig.renderPass = renderPass;
 		pipelineConfig.pipelineLayout = m_pipelineLayout;
 
-		m_fPipeline = std::make_unique<FPipeline>(
+		// TODO: Pipeline derivative or Cache (Instead of rebuilding a pipeline from scratch)
+		// PBR
+		m_fPipelinePBR = std::make_unique<FPipeline>(
 			m_device,
 			pipelineConfig,
-			"shaders/phong.vert.spv",
-			"shaders/phong.frag.spv");
+			"shaders/pbr.vert.spv",
+			"shaders/pbr.frag.spv");
 
-		VkPhysicalDeviceFeatures  supportedFeatures;
-		vkGetPhysicalDeviceFeatures(m_device.physicalDevice(), &supportedFeatures);
+		// WHITE
+		m_fPipelineWhite = std::make_unique<FPipeline>(
+			m_device,
+			pipelineConfig,
+			"shaders/white.vert.spv",
+			"shaders/white.frag.spv");
 
 		// WIREFRAME
 		pipelineConfig.rasterizationInfo.polygonMode = VK_POLYGON_MODE_LINE;
 		m_fPipelineWireFrame = std::make_unique<FPipeline>(
 			m_device,
 			pipelineConfig,
-			"shaders/phong.vert.spv",
-			"shaders/phong.frag.spv");
+			"shaders/white.vert.spv",
+			"shaders/white.frag.spv");
 	}
 
 	void RenderSystem::renderGameObjects(FrameInfo& frameInfo, std::vector<GameObject>& gameObjects)
@@ -85,7 +85,7 @@ namespace fengine {
 		if (GlobalData::getInstance().isWireFrame)
 			m_fPipelineWireFrame->bind(frameInfo.commandBuffer);
 		else
-			m_fPipeline->bind(frameInfo.commandBuffer);
+			m_fPipelinePBR->bind(frameInfo.commandBuffer);
 
 		vkCmdBindDescriptorSets(
 			frameInfo.commandBuffer,
@@ -97,8 +97,12 @@ namespace fengine {
 			0,
 			nullptr);
 
+		int i = 0;
 		for (auto& obj : gameObjects)
 		{
+			if (i > 0)
+				m_fPipelineWhite->bind(frameInfo.commandBuffer);
+			i++;
 			//auto uiInputData = m_draw->GetUIInputData();
 
 			SimplePushConstantData push{};

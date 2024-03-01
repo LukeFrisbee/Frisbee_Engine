@@ -1,7 +1,7 @@
 #version 450
 
-layout (location = 0) in vec3 VertexPosition;
-layout (location = 1) in vec3 VertexNormal;
+layout (location = 0) in vec3 worldPos;
+layout (location = 1) in vec3 normalWorldSpace;
 //layout (location = 2) in vec2 uv;
 
 layout (location = 0) out vec4 outColor;
@@ -9,13 +9,8 @@ layout (location = 0) out vec4 outColor;
 // descriptor set
 layout(set = 0, binding = 0) uniform GlobalUbo {
 	mat4 projectionViewMatrix;
-	//vec3 directionToLight;
+	vec3 lightPos;
     vec3 camPos;
-
-    //vec3 albedo;
-    //float metallic;
-    //float roughness;
-    //float ao;
 } ubo;
 
 // push
@@ -32,11 +27,9 @@ const float PI = 3.14159265359;
 const vec3 albedo = vec3(0.8, 1.0, 0.8);
 const float metallic = 0.0;
 const float roughness = 0.3;
-const float ao = 0.3;
+const float ao = 0.02;
 
-const vec3 WorldPos = vec3(0.0, 0.0, 1.0);
-
-const vec3 LIGHT_POS = vec3(0.0, 10.0, 0.5);
+const vec3 WorldPos = vec3(0.0, 0.0, 0.0);
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
@@ -77,9 +70,8 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 
 void main()
 {		
-    
-   vec3 N = normalize(VertexNormal);
-   vec3 V = normalize(ubo.camPos - WorldPos);
+   vec3 N = normalize(normalWorldSpace);
+   vec3 V = normalize(ubo.camPos - worldPos);
    
    vec3 F0 = vec3(0.04); 
    F0 = mix(F0, albedo, metallic);
@@ -88,9 +80,9 @@ void main()
    vec3 Lo = vec3(0.0);
    
    // calculate per-light radiance
-   vec3 L = normalize(LIGHT_POS - WorldPos);
+   vec3 L = normalize(ubo.lightPos - worldPos);
    vec3 H = normalize(V + L);
-   float dist    = length(LIGHT_POS - WorldPos);
+   float dist    = length(ubo.lightPos - worldPos);
    float attenuation = 1.0 / (dist * dist);
    vec3 radiance     = vec3(lightColor * attenuation);        
        

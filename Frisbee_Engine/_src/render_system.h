@@ -12,8 +12,23 @@
 
 namespace fengine {
 	class RenderSystem {
-
 		public:
+			// Alightment Requirements for UBO:
+			// Multiples of 16
+			// https://vulkan-tutorial.com/Uniform_buffers/Descriptor_pool_and_sets#page_Alignment-requirements
+			struct GlobalUbo {
+				glm::mat4 projectionViewMatrix{ 1.0f };
+				glm::vec3 LightPos = glm::vec3(1.0f, -4.0f, -1.0f);
+				//glm::vec3 directionToLight = glm::normalize(glm::vec3(1.0f, -3.0f, -1.0f));
+				alignas(16) glm::vec3 camPos = {};
+			};
+
+			struct SimplePushConstantData {
+				glm::mat4 modelMatrix{ 1.0f };
+				glm::mat4 normalMatrix{ 1.0f };
+				//alignas(16) glm::vec3 Color{};
+			};
+
 			RenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
 			~RenderSystem();
 
@@ -27,7 +42,9 @@ namespace fengine {
 			void createPipeline(VkRenderPass renderPass);
 
 			Device& m_device;
-			std::unique_ptr<FPipeline> m_fPipeline;
+			// TODO: Pipeline derivative or Cache (Instead of rebuilding a pipeline from scratch)
+			std::unique_ptr<FPipeline> m_fPipelinePBR;
+			std::unique_ptr<FPipeline> m_fPipelineWhite;
 			std::unique_ptr<FPipeline> m_fPipelineWireFrame;
 			VkPipelineLayout m_pipelineLayout;
 	};
