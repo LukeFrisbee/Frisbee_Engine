@@ -46,7 +46,7 @@ namespace fengine {
 			void createPipeline(VkRenderPass renderPass);
 
 			Device& m_device;
-			// TODO: Pipeline derivative or Cache (Instead of rebuilding a pipeline from scratch)
+			// TEMPORARY -> need to implement a multi pipline capable system
 			std::unique_ptr<FPipeline> m_fPipelinePBR;
 			std::unique_ptr<FPipeline> m_fPipelineWhite;
 			std::unique_ptr<FPipeline> m_fPipelineWireFrame;

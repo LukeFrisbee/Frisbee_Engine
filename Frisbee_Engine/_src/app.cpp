@@ -131,6 +131,8 @@ namespace fengine {
 
 	void App::loadGameObjects()
 	{
+		// TEMPORARY -> need to implement the GameObject system
+
 		// JEEP
 		std::shared_ptr<Model> model = Model::createModelFromFile(m_device, 
 			"C:\\Users\\lukeb\\_Projects\\C++\\Frisbee_Engine\\Frisbee_Engine\\models\\jeep.obj");

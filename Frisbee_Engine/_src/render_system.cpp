@@ -55,7 +55,9 @@ namespace fengine {
 		pipelineConfig.renderPass = renderPass;
 		pipelineConfig.pipelineLayout = m_pipelineLayout;
 
+		// TEMPORARY -> need to implement a multi pipline capable system
 		// TODO: Pipeline derivative or Cache (Instead of rebuilding a pipeline from scratch)
+		
 		// PBR
 		m_fPipelinePBR = std::make_unique<FPipeline>(
 			m_device,
@@ -81,7 +83,7 @@ namespace fengine {
 
 	void RenderSystem::renderGameObjects(FrameInfo& frameInfo, std::vector<GameObject>& gameObjects)
 	{
-		// WIREFRAME
+		// TEMPORARY -> need to implement a multi pipline capable system
 		if (GlobalData::getInstance().isWireFrame)
 			m_fPipelineWireFrame->bind(frameInfo.commandBuffer);
 		else
@@ -100,17 +102,14 @@ namespace fengine {
 		int i = 0;
 		for (auto& obj : gameObjects)
 		{
+			// TEMPORARY -> need to implement a multi pipline capable system
 			if (!GlobalData::getInstance().isWireFrame && i > 0)
 				m_fPipelineWhite->bind(frameInfo.commandBuffer);
 			i++;
-			//auto uiInputData = m_draw->GetUIInputData();
 
 			SimplePushConstantData push{};
 			push.modelMatrix = obj.transform.modelMatrix();
 			push.normalMatrix = obj.transform.normalMatrix();
-
-			//push.offset = uiInputData.position; //obj.transform2D.translation;
-			//push.Color = obj.Color;
 
 			vkCmdPushConstants(frameInfo.commandBuffer, m_pipelineLayout,
 				VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
