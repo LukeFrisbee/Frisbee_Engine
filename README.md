@@ -6,3 +6,6 @@ Wireframe View:
 
 Phong Lighting:
 ![alt text](https://raw.githubusercontent.com/LukeFrisbee/Frisbee_Engine/main/README_IMAGES/jeep.png)
+
+PBR Lighting:
+![alt text](https://raw.githubusercontent.com/LukeFrisbee/Frisbee_Engine/main/README_IMAGES/jeep_pbr.png)
