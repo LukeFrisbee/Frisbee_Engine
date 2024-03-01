@@ -1,11 +1,11 @@
 # Frisbee_Engine
 A Vulkan based rendering engine
 
-Wireframe View:
-![alt text](https://raw.githubusercontent.com/LukeFrisbee/Frisbee_Engine/main/README_IMAGES/amg.png)
+### PBR Shader:
+![](https://raw.githubusercontent.com/LukeFrisbee/Frisbee_Engine/main/README_IMAGES/pbr.gif)
 
-Phong Lighting:
-![alt text](https://raw.githubusercontent.com/LukeFrisbee/Frisbee_Engine/main/README_IMAGES/jeep.png)
+### Wireframe View:
+![](https://raw.githubusercontent.com/LukeFrisbee/Frisbee_Engine/main/README_IMAGES/amg.png)
 
-PBR Lighting:
-![alt text](https://raw.githubusercontent.com/LukeFrisbee/Frisbee_Engine/main/README_IMAGES/jeep_pbr.png)
+### Phong Shader:
+![](https://raw.githubusercontent.com/LukeFrisbee/Frisbee_Engine/main/README_IMAGES/jeep.png)
