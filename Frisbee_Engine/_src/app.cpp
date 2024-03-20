@@ -53,6 +53,8 @@ namespace fengine {
 			// Camera
 			cameraMovement.moveInPlaneXZ(m_window.getGLFWwindow(), frameTime, cameraObject);
 			camera.setViewYXZ(cameraObject.transform.translation, cameraObject.transform.rotation);
+			camera.setPosition(cameraObject.transform.translation);
+
 			globalData.camPos = cameraObject.transform.translation;
 			globalData.camRot = cameraObject.transform.rotation;
 			// TODO: Implement on window resize rather than in run loop
@@ -64,15 +66,6 @@ namespace fengine {
 
 				int frameIndex = m_renderer.getFrameIndex();
 				FrameInfo frameInfo{ frameIndex, frameTime, commandBuffer, camera };
-
-				// UBO
-				RenderSystem::GlobalUbo ubo{};
-				ubo.projectionViewMatrix = camera.getProjection() * camera.getView();
-				ubo.camPos = cameraObject.transform.translation;
-				ubo.LightPos = m_gameObjects[1].transform.translation;
-
-				//uboBuffers[frameIndex]->writeToBuffer(&ubo);
-				//uboBuffers[frameIndex]->flush(); // HOST_COHERENT_BIT is on, flushing automatic
 
 				// RENDER 
 				m_renderer.beginRenderPass(commandBuffer);

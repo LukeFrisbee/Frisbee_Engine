@@ -11,8 +11,7 @@
 
 #include "global_data.h"
 
-#include "swap_chain.h"
-#include "descriptors.h"
+#include "shader.h"
 
 namespace fengine {
 	RenderSystem::RenderSystem(Device& device, VkRenderPass renderPass)
@@ -66,10 +65,10 @@ namespace fengine {
 
 	void RenderSystem::renderGameObjects(FrameInfo& frameInfo, std::vector<GameObject>& gameObjects)
 	{
-		if (GlobalData::getInstance().isWireFrame)
-			m_wireframePipeline->bind(frameInfo.commandBuffer);
-		else
-			m_shaders[0]->bindPipeline(frameInfo.commandBuffer);
+		//if (GlobalData::getInstance().isWireFrame)
+		//	m_wireframePipeline->bind(frameInfo.commandBuffer);
+		//else
+		m_shaders[0]->bindPipeline(frameInfo.commandBuffer);
 
 		m_shaders[0]->bindDescriptorSets(frameInfo.commandBuffer, frameInfo.frameIndex);
 
@@ -79,6 +78,18 @@ namespace fengine {
 			push.modelMatrix = obj.transform.modelMatrix();
 			push.normalMatrix = obj.transform.normalMatrix();
 
+			Shader::GlobalUbo ubo{};
+			ubo.projectionViewMatrix = frameInfo.camera.getProjection() * frameInfo.camera.getView();
+			ubo.camPos = frameInfo.camera.getPosition();
+			ubo.LightPos = gameObjects[1].transform.translation;
+
+			auto& gd = GlobalData::getInstance();
+			ubo.albedo = gd.albedo;
+			ubo.metallic = gd.metallic;
+			ubo.roughness = gd.roughness;
+			ubo.ao = gd.ao;
+
+			m_shaders[0]->updateDescriptorSets(ubo, frameInfo.frameIndex);
 			m_shaders[0]->updatePushConstants(frameInfo.commandBuffer, push);
 
 			obj.model->bind(frameInfo.commandBuffer);

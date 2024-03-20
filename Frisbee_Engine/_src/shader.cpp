@@ -7,17 +7,11 @@
 #include "swap_chain.h"
 #include "descriptors.h"
 #include "buffer.h"
-#include "render_system.h"
 
 namespace fengine {
 	Shader::Shader(Device& device, const VkRenderPass& renderPass, const char* vertexPath, const char* fragPath)
 		: m_device{ device }
 	{
-		m_globalDescriptorPool = DescriptorPool::Builder(m_device)
-			.setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
-			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
-			.build();
-
 		_buildDescriptorSet();
 		_createPipelineLayout();
 		_createPipeline(renderPass);
@@ -30,11 +24,16 @@ namespace fengine {
 
 	void Shader::_buildDescriptorSet()
 	{
+		m_globalDescriptorPool = DescriptorPool::Builder(m_device)
+			.setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+			.build();
+
 		for (int i = 0; i < m_uboBuffers.size(); i++)
 		{
 			m_uboBuffers[i] = std::make_unique<Buffer>(
 				m_device,
-				sizeof(RenderSystem::GlobalUbo),
+				sizeof(GlobalUbo),
 				1,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -44,7 +43,7 @@ namespace fengine {
 		}
 
 		// Descriptor Sets
-		auto globalSetLayout =
+		m_globalSetLayout =
 			DescriptorSetLayout::Builder(m_device)
 			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
 			.build();
@@ -52,12 +51,12 @@ namespace fengine {
 		//std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
 		for (int i = 0; i < m_descriptorSets.size(); i++) {
 			auto bufferInfo = m_uboBuffers[i]->descriptorInfo();
-			DescriptorWriter(*globalSetLayout, *m_globalDescriptorPool)
+			DescriptorWriter(*m_globalSetLayout, *m_globalDescriptorPool)
 				.writeBuffer(0, &bufferInfo)
 				.build(m_descriptorSets[i]);
 		}
 
-		m_descriptorSetLayouts.push_back(globalSetLayout->getDescriptorSetLayout());
+		m_descriptorSetLayouts.push_back(m_globalSetLayout->getDescriptorSetLayout());
 	}
 
 	void Shader::bindPipeline(const VkCommandBuffer& commandBuffer) {
@@ -84,6 +83,14 @@ namespace fengine {
 		vkCmdPushConstants(commandBuffer, m_pipelineLayout,
 			VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
 			0, sizeof(SimplePushConstantData), &push);
+	}
+
+	void Shader::updateDescriptorSets(GlobalUbo& ubo, int frameIndex)
+	{
+		assert(frameIndex <= SwapChain::MAX_FRAMES_IN_FLIGHT && "shader: frameIndex out of bounds (Max Frames In Flight)");
+
+		m_uboBuffers[frameIndex]->writeToBuffer(&ubo);
+		//uboBuffers[frameIndex]->flush(); // HOST_COHERENT_BIT is on, flushing automatic
 	}
 
 	void Shader::_createPipelineLayout() {
