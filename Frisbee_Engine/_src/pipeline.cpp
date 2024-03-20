@@ -10,7 +10,7 @@
 namespace fengine {
 
 	FPipeline::FPipeline(
-		Device& device,
+		const Device& device,
 		const PipelineConfigInfo& configInfo,
 		const std::string& vertFilePath,
 		const std::string& fragFilePath) : m_device{ device }

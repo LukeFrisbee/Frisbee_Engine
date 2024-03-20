@@ -54,6 +54,7 @@ namespace fengine {
 
 		// Render Sysem
 		RenderSystem renderSystem { m_device, m_renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout() };
+		renderSystem.createShader();
 
 		// Camera + Movement
 		Camera camera{};
@@ -106,17 +107,12 @@ namespace fengine {
 				ubo.camPos = cameraObject.transform.translation;
 				ubo.LightPos = m_gameObjects[1].transform.translation;
 
-				ubo.albedo = globalData.albedo;
-				ubo.roughness = globalData.roughness;
-				ubo.metallic = globalData.metallic;
-				ubo.ao = globalData.ao;
-
 				uboBuffers[frameIndex]->writeToBuffer(&ubo);
 				//uboBuffers[frameIndex]->flush(); // HOST_COHERENT_BIT is on, flushing automatic
 
 				// RENDER 
 				m_renderer.beginRenderPass(commandBuffer);
-				renderSystem.renderGameObjects(frameInfo, m_gameObjects);
+				m_renderSystem.renderGameObjects(frameInfo, m_gameObjects);
 				m_renderer.endRenderPass(commandBuffer);
 				m_renderer.endFrame();
 			}

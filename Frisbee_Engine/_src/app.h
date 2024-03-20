@@ -7,6 +7,7 @@
 #include "renderer.h"
 #include "game_object.h"
 #include "descriptors.h"
+#include "render_system.h"
 
 namespace fengine { 
 	class App {
@@ -28,8 +29,8 @@ namespace fengine {
 		FWindow m_window {WIDTH, HEIGHT, "Frisbee Engine"};
 		Device m_device{ m_window };
 		Renderer m_renderer{ m_window, m_device };
+		RenderSystem m_renderSystem{ m_device, m_renderer.getRenderPass() };
 
-		std::unique_ptr<DescriptorPool> m_globalDescriptorPool;
 		std::vector<GameObject> m_gameObjects;
 	};
 }

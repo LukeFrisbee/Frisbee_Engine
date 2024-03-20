@@ -10,6 +10,8 @@
 #include "camera.h"
 #include "frame_info.h"
 
+#include "shader.h"
+
 namespace fengine {
 	class RenderSystem {
 		public:
@@ -20,36 +22,24 @@ namespace fengine {
 				glm::mat4 projectionViewMatrix{ 1.0f };
 				glm::vec3 LightPos = glm::vec3(1.0f, -4.0f, -1.0f);
 				alignas(16) glm::vec3 camPos = {};
-
-				alignas(16) glm::vec3 albedo { 1.0, 0.0, 0.0 };
-				float metallic = 0.0;
-				float roughness = 0.3;
-				float ao = 0.02;
 			};
 
-			struct SimplePushConstantData {
-				glm::mat4 modelMatrix{ 1.0f };
-				glm::mat4 normalMatrix{ 1.0f };
-				//alignas(16) glm::vec3 Color{};
-			};
-
-			RenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
-			~RenderSystem();
-
+			RenderSystem(Device& device, VkRenderPass renderPass);
+			
 			RenderSystem(const RenderSystem&) = delete;
 			RenderSystem& operator=(const RenderSystem&) = delete;
 
+			void createShader();
 			void renderGameObjects(FrameInfo& frameInfo, std::vector<GameObject>& gameObjects);
 
 		private:
-			void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
-			void createPipeline(VkRenderPass renderPass);
+			void _makeWireframe(const VkRenderPass& renderPass, const VkDescriptorSetLayout& descriptorSetLayout);
 
 			Device& m_device;
-			// TEMPORARY -> need to implement a multi pipline capable system
-			std::unique_ptr<FPipeline> m_fPipelinePBR;
-			std::unique_ptr<FPipeline> m_fPipelineWhite;
-			std::unique_ptr<FPipeline> m_fPipelineWireFrame;
-			VkPipelineLayout m_pipelineLayout;
+			VkRenderPass& m_renderPass;
+
+			std::unique_ptr<FPipeline> m_wireframePipeline;
+			std::vector<std::unique_ptr<Shader>> m_shaders;
+
 	};
 }

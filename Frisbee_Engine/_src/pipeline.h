@@ -28,7 +28,7 @@ namespace fengine {
 	class FPipeline {
 		public:
 			FPipeline(
-				Device& device, 
+				const Device& device, 
 				const PipelineConfigInfo& configInfo, 
 				const std::string& vertFilePath, 
 				const std::string& fragFilePath);
@@ -51,7 +51,7 @@ namespace fengine {
 
 			void createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
 
-			Device& m_device;
+			const Device& m_device;
 			VkPipeline m_graphicsPipeline;
 			VkShaderModule m_vertShaderModule;
 			VkShaderModule m_fragShaderModule;
