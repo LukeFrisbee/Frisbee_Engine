@@ -21,42 +21,42 @@ namespace fengine {
 		//_makeWireframe(renderPass);
 	}
 
-	void RenderSystem::_makeWireframe(const VkRenderPass& renderPass, const VkDescriptorSetLayout& descriptorSetLayout)
-	{
-		VkPushConstantRange pushConstantRange{};
-		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-		pushConstantRange.offset = 0;
-		pushConstantRange.size = sizeof(SimplePushConstantData);
-
-		std::vector<VkDescriptorSetLayout> descriptorSetLayouts{ descriptorSetLayout };
-
-		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
-		pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
-		pipelineLayoutInfo.pushConstantRangeCount = 1;
-		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-
-		VkPipelineLayout pipelineLayout;
-		if (vkCreatePipelineLayout(m_device.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
-		{
-			throw std::runtime_error("Failed to create pipeline layout!");
-		}
-
-		PipelineConfigInfo pipelineConfig{};
-		FPipeline::defaultPipeLineConfigInfo(
-			pipelineConfig);
-
-		pipelineConfig.renderPass = renderPass;
-		pipelineConfig.pipelineLayout = pipelineLayout;
-		pipelineConfig.rasterizationInfo.polygonMode = VK_POLYGON_MODE_LINE; // Wireframe
-
-		m_wireframePipeline = std::make_unique<FPipeline>(
-			m_device,
-			pipelineConfig,
-			"shaders/white.vert.spv",
-			"shaders/white.frag.spv");
-	}
+	//void RenderSystem::_makeWireframe(const VkRenderPass& renderPass, const VkDescriptorSetLayout& descriptorSetLayout)
+	//{
+	//	VkPushConstantRange pushConstantRange{};
+	//	pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+	//	pushConstantRange.offset = 0;
+	//	pushConstantRange.size = sizeof(SimplePushConstantData);
+	//
+	//	std::vector<VkDescriptorSetLayout> descriptorSetLayouts{ descriptorSetLayout };
+	//
+	//	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+	//	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	//	pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+	//	pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
+	//	pipelineLayoutInfo.pushConstantRangeCount = 1;
+	//	pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+	//
+	//	VkPipelineLayout pipelineLayout;
+	//	if (vkCreatePipelineLayout(m_device.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
+	//	{
+	//		throw std::runtime_error("Failed to create pipeline layout!");
+	//	}
+	//
+	//	PipelineConfigInfo pipelineConfig{};
+	//	FPipeline::defaultPipeLineConfigInfo(
+	//		pipelineConfig);
+	//
+	//	pipelineConfig.renderPass = renderPass;
+	//	pipelineConfig.pipelineLayout = pipelineLayout;
+	//	pipelineConfig.rasterizationInfo.polygonMode = VK_POLYGON_MODE_LINE; // Wireframe
+	//
+	//	m_wireframePipeline = std::make_unique<FPipeline>(
+	//		m_device,
+	//		pipelineConfig,
+	//		"shaders/white.vert.spv",
+	//		"shaders/white.frag.spv");
+	//}
 
 	void RenderSystem::createShader() {
 		m_shaders.push_back(

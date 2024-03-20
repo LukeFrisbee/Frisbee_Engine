@@ -13,6 +13,11 @@ namespace fengine {
 	Shader::Shader(Device& device, const VkRenderPass& renderPass, const char* vertexPath, const char* fragPath)
 		: m_device{ device }
 	{
+		m_globalDescriptorPool = DescriptorPool::Builder(m_device)
+			.setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+			.build();
+
 		_buildDescriptorSet();
 		_createPipelineLayout();
 		_createPipeline(renderPass);
@@ -25,11 +30,6 @@ namespace fengine {
 
 	void Shader::_buildDescriptorSet()
 	{
-		std::unique_ptr<DescriptorPool> globalDescriptorPool = DescriptorPool::Builder(m_device)
-			.setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
-			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
-			.build();
-
 		for (int i = 0; i < m_uboBuffers.size(); i++)
 		{
 			m_uboBuffers[i] = std::make_unique<Buffer>(
@@ -52,12 +52,12 @@ namespace fengine {
 		//std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
 		for (int i = 0; i < m_descriptorSets.size(); i++) {
 			auto bufferInfo = m_uboBuffers[i]->descriptorInfo();
-			DescriptorWriter(*globalSetLayout, *globalDescriptorPool)
+			DescriptorWriter(*globalSetLayout, *m_globalDescriptorPool)
 				.writeBuffer(0, &bufferInfo)
 				.build(m_descriptorSets[i]);
 		}
 
-		m_descriptorSetLayout.push_back(globalSetLayout->getDescriptorSetLayout());
+		m_descriptorSetLayouts.push_back(globalSetLayout->getDescriptorSetLayout());
 	}
 
 	void Shader::bindPipeline(const VkCommandBuffer& commandBuffer) {
@@ -95,8 +95,8 @@ namespace fengine {
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(m_descriptorSetLayout.size());
-		pipelineLayoutInfo.pSetLayouts = m_descriptorSetLayout.data();
+		pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(m_descriptorSetLayouts.size());
+		pipelineLayoutInfo.pSetLayouts = m_descriptorSetLayouts.data();
 		pipelineLayoutInfo.pushConstantRangeCount = 1;
 		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 

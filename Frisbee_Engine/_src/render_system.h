@@ -33,7 +33,7 @@ namespace fengine {
 			void renderGameObjects(FrameInfo& frameInfo, std::vector<GameObject>& gameObjects);
 
 		private:
-			void _makeWireframe(const VkRenderPass& renderPass, const VkDescriptorSetLayout& descriptorSetLayout);
+			//void _makeWireframe(const VkRenderPass& renderPass, const VkDescriptorSetLayout& descriptorSetLayout);
 
 			Device& m_device;
 			VkRenderPass& m_renderPass;

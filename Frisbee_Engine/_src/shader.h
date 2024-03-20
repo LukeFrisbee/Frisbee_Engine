@@ -37,7 +37,8 @@ namespace fengine {
 		std::unique_ptr<FPipeline> m_pipeline;
 		std::vector<std::unique_ptr<Buffer>> m_uboBuffers = std::vector<std::unique_ptr<Buffer>>(SwapChain::MAX_FRAMES_IN_FLIGHT);
 
+		std::unique_ptr<DescriptorPool> m_globalDescriptorPool;
 		std::vector<VkDescriptorSet> m_descriptorSets = std::vector<VkDescriptorSet>(SwapChain::MAX_FRAMES_IN_FLIGHT);
-		std::vector<VkDescriptorSetLayout> m_descriptorSetLayout;
+		std::vector<VkDescriptorSetLayout> m_descriptorSetLayouts;
 	};
 }
