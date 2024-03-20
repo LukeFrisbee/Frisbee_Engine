@@ -12,10 +12,7 @@
 
 namespace fengine {
 	App::App() {
-		m_globalDescriptorPool = DescriptorPool::Builder(m_device)
-			.setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
-			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
-			.build();
+		m_renderSystem.createShader();
 		loadGameObjects();
 	}
 
@@ -23,39 +20,6 @@ namespace fengine {
 
 	void App::run() 
 	{
-		// Double BUffering
-		std::vector<std::unique_ptr<Buffer>> uboBuffers(SwapChain::MAX_FRAMES_IN_FLIGHT);
-		for (int i = 0; i < uboBuffers.size(); i++)
-		{
-			uboBuffers[i] = std::make_unique<Buffer>(
-				m_device,
-				sizeof(RenderSystem::GlobalUbo),
-				1,
-				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-				m_device.properties.limits.minUniformBufferOffsetAlignment
-			);
-			uboBuffers[i]->map();
-		}
-
-		// Descriptor Sets
-		auto globalSetLayout =
-			DescriptorSetLayout::Builder(m_device)
-			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
-			.build();
-
-		std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
-		for (int i = 0; i < globalDescriptorSets.size(); i++) {
-			auto bufferInfo = uboBuffers[i]->descriptorInfo();
-			DescriptorWriter(*globalSetLayout, *m_globalDescriptorPool)
-				.writeBuffer(0, &bufferInfo)
-				.build(globalDescriptorSets[i]);
-		}
-
-		// Render Sysem
-		RenderSystem renderSystem { m_device, m_renderer.getRenderPass(), globalSetLayout->getDescriptorSetLayout() };
-		renderSystem.createShader();
-
 		// Camera + Movement
 		Camera camera{};
 		camera.setViewDirection(glm::vec3{}, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -99,7 +63,7 @@ namespace fengine {
 			if (auto commandBuffer = m_renderer.beginFrame()) {
 
 				int frameIndex = m_renderer.getFrameIndex();
-				FrameInfo frameInfo{ frameIndex, frameTime, commandBuffer, camera, globalDescriptorSets[frameIndex]};
+				FrameInfo frameInfo{ frameIndex, frameTime, commandBuffer, camera };
 
 				// UBO
 				RenderSystem::GlobalUbo ubo{};
@@ -107,7 +71,7 @@ namespace fengine {
 				ubo.camPos = cameraObject.transform.translation;
 				ubo.LightPos = m_gameObjects[1].transform.translation;
 
-				uboBuffers[frameIndex]->writeToBuffer(&ubo);
+				//uboBuffers[frameIndex]->writeToBuffer(&ubo);
 				//uboBuffers[frameIndex]->flush(); // HOST_COHERENT_BIT is on, flushing automatic
 
 				// RENDER 
