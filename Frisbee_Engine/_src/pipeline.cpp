@@ -15,7 +15,7 @@ namespace fengine {
 		const std::string& vertFilePath,
 		const std::string& fragFilePath) : m_device{ device }
 	{
-		createGraphicsPipeline(configInfo, vertFilePath, fragFilePath);
+		_createGraphicsPipeline(configInfo, vertFilePath, fragFilePath);
 	}
 
 	FPipeline::~FPipeline()
@@ -30,7 +30,7 @@ namespace fengine {
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
 	}
 
-	std::vector<char> FPipeline::readFile(const std::string& filePath)
+	std::vector<char> FPipeline::_readFile(const std::string& filePath)
 	{
 		std::ifstream file(filePath, std::ios::ate | std::ios::binary);
 
@@ -48,7 +48,7 @@ namespace fengine {
 		return buffer;
 	}
 
-	void FPipeline::createGraphicsPipeline(
+	void FPipeline::_createGraphicsPipeline(
 		const PipelineConfigInfo& configInfo,
 		const std::string& vertFilePath, 
 		const std::string& fragFilePath)
@@ -58,11 +58,11 @@ namespace fengine {
 		assert(configInfo.renderPass != VK_NULL_HANDLE &&
 			"Cannot create graphics pipeline: no renderPass provided in configInfo");
 
-		auto vertCode = readFile(vertFilePath);
-		auto fragCode = readFile(fragFilePath);
+		auto vertCode = _readFile(vertFilePath);
+		auto fragCode = _readFile(fragFilePath);
 
-		createShaderModule(vertCode, &m_vertShaderModule);
-		createShaderModule(fragCode, &m_fragShaderModule);
+		_createShaderModule(vertCode, &m_vertShaderModule);
+		_createShaderModule(fragCode, &m_fragShaderModule);
 
 		VkPipelineShaderStageCreateInfo shaderStagesInfo[2];
 		shaderStagesInfo[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -117,7 +117,7 @@ namespace fengine {
 		}
 	}
 
-	void FPipeline::createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule)
+	void FPipeline::_createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule)
 	{
 		VkShaderModuleCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;

@@ -7,12 +7,13 @@
 #include "render_system.h"
 #include "camera.h"
 #include "keyboard_movement.h"
+#include "fps_control.h"
 #include "global_data.h"
 #include "buffer.h"
 
 namespace fengine {
 	App::App() {
-		m_renderSystem.createShader();
+		m_renderSystem.createShader("shaders/pbr.vert.spv", "shaders/pbr.frag.spv");
 		loadGameObjects();
 	}
 
@@ -25,6 +26,7 @@ namespace fengine {
 		camera.setViewDirection(glm::vec3{}, glm::vec3(0.0f, 0.0f, 1.0f));
 		auto cameraObject = GameObject::createGameObject();
 		KeyboardMovement cameraMovement{};
+		//FPSControl fpsControl{};
 
 		// Timing
 		auto currentTime = std::chrono::high_resolution_clock::now();
@@ -52,6 +54,7 @@ namespace fengine {
 
 			// Camera
 			cameraMovement.moveInPlaneXZ(m_window.getGLFWwindow(), frameTime, cameraObject);
+			//fpsControl.moveInPlaneXZ(m_window.getGLFWwindow(), frameTime, cameraObject);
 			camera.setViewYXZ(cameraObject.transform.translation, cameraObject.transform.rotation);
 			camera.setPosition(cameraObject.transform.translation);
 
@@ -69,7 +72,9 @@ namespace fengine {
 
 				// RENDER 
 				m_renderer.beginRenderPass(commandBuffer);
+
 				m_renderSystem.renderGameObjects(frameInfo, m_gameObjects);
+
 				m_renderer.endRenderPass(commandBuffer);
 				m_renderer.endFrame();
 			}

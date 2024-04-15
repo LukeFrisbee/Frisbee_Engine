@@ -1,10 +1,10 @@
-// #pragma once
+//#pragma once
 // 
-// #include "shader.h"
+//#include "shader.h"
 //#include <memory>
 //
 //namespace fengine {
-//	struct PBRUBO {
+//	struct PBR {
 //		glm::vec3 albedo{ 1.0, 0.0, 0.0 };
 //		float metallic = 0.0;
 //		float roughness = 0.3;
@@ -21,10 +21,10 @@
 //			Material& operator= (const Material&) = delete;
 //
 //			const std::shared_ptr<Shader> getShader() const { return m_shader; }
-//			const PBRUBO getPBRUBO() const { return pbr; }
+//			const PBR getPBR() const { return pbr; }
 //
 //		private:
-//			PBRUBO pbr{};
+//			PBR pbr{};
 //			std::shared_ptr<Shader> m_shader;
 //	};
 //}

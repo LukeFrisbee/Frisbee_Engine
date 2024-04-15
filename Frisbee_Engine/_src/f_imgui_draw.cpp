@@ -87,6 +87,12 @@ namespace fengine {
 		auto height = io.DisplaySize.y / 1.5f;
 		ImGui::SetWindowSize({ width, height }, ImGuiCond_Once);
 
+		if (ImGui::CollapsingHeader("Debug", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::Text(globalData.debugString.c_str());
+			globalData.debugString = "";
+		}
+
 		// Info
 		if (ImGui::CollapsingHeader("Info", ImGuiTreeNodeFlags_DefaultOpen))
 		{

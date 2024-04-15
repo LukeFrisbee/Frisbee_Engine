@@ -15,19 +15,18 @@
 namespace fengine {
 	class RenderSystem {
 		public:
-			RenderSystem(Device& device, VkRenderPass renderPass);
+			RenderSystem(Device& device, const VkRenderPass& renderPass);
 			
 			RenderSystem(const RenderSystem&) = delete;
 			RenderSystem& operator=(const RenderSystem&) = delete;
 
-			void createShader();
+			void createShader(const std::string& vertexFilePath, const std::string& fragmentFilePath);
 			void renderGameObjects(FrameInfo& frameInfo, std::vector<GameObject>& gameObjects);
 
 		private:
-			//void _makeWireframe(const VkRenderPass& renderPass, const VkDescriptorSetLayout& descriptorSetLayout);
 
 			Device& m_device;
-			VkRenderPass& m_renderPass;
+			const VkRenderPass& m_renderPass;
 
 			std::unique_ptr<FPipeline> m_wireframePipeline;
 			std::vector<std::unique_ptr<Shader>> m_shaders;

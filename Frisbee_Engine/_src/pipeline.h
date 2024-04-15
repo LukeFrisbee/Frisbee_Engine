@@ -42,14 +42,14 @@ namespace fengine {
 			static void defaultPipeLineConfigInfo(PipelineConfigInfo& configInfo);
 
 		private:
-			static std::vector<char> readFile(const std::string& filePath);
+			static std::vector<char> _readFile(const std::string& filePath);
 
-			void createGraphicsPipeline(
+			void _createGraphicsPipeline(
 				const PipelineConfigInfo& configInfo, 
 				const std::string& vertFilePath, 
 				const std::string& fragFilePath);
 
-			void createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
+			void _createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
 
 			const Device& m_device;
 			VkPipeline m_graphicsPipeline;

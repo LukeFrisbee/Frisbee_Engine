@@ -32,7 +32,7 @@ namespace fengine {
 			float ao { 0.02f };
 		};
 
-		Shader(Device& device, const VkRenderPass& renderPass, const char* vertexPath, const char* fragPath);
+		Shader(Device& device, const VkRenderPass& renderPass, const std::string& vertexPath, const std::string& fragPath);
 		~Shader();
 
 		void bindPipeline(const VkCommandBuffer& commandBuffer);
@@ -47,7 +47,7 @@ namespace fengine {
 	private:
 		void _buildDescriptorSet();
 		void _createPipelineLayout();
-		void _createPipeline(const VkRenderPass& renderPass);
+		void _createPipeline(const VkRenderPass& renderPass, const std::string& vertexPath, const std::string& fragPath);
 
 		Device& m_device;
 		VkPipelineLayout m_pipelineLayout;

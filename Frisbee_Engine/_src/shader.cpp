@@ -9,12 +9,12 @@
 #include "buffer.h"
 
 namespace fengine {
-	Shader::Shader(Device& device, const VkRenderPass& renderPass, const char* vertexPath, const char* fragPath)
+	Shader::Shader(Device& device, const VkRenderPass& renderPass, const std::string& vertexPath, const std::string& fragPath)
 		: m_device{ device }
 	{
 		_buildDescriptorSet();
 		_createPipelineLayout();
-		_createPipeline(renderPass);
+		_createPipeline(renderPass, vertexPath, fragPath);
 	}
 
 	Shader::~Shader()
@@ -106,14 +106,14 @@ namespace fengine {
 		pipelineLayoutInfo.pSetLayouts = m_descriptorSetLayouts.data();
 		pipelineLayoutInfo.pushConstantRangeCount = 1;
 		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-
+		
 		if (vkCreatePipelineLayout(m_device.device(), &pipelineLayoutInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS)
 		{
 			throw std::runtime_error("Failed to create pipeline layout!");
 		}
 	}
 
-	void Shader::_createPipeline(const VkRenderPass& renderPass) {
+	void Shader::_createPipeline(const VkRenderPass& renderPass, const std::string& vertexPath, const std::string& fragPath) {
 		assert(m_pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
 		PipelineConfigInfo pipelineConfig{};
@@ -126,8 +126,8 @@ namespace fengine {
 		m_pipeline = std::make_unique<FPipeline>(
 			m_device,
 			pipelineConfig,
-			"shaders/pbr.vert.spv",
-			"shaders/pbr.frag.spv");
+			vertexPath,
+			fragPath);
 	}
 }
 
