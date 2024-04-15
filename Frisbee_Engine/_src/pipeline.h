@@ -28,7 +28,7 @@ namespace fengine {
 	class FPipeline {
 		public:
 			FPipeline(
-				Device& device, 
+				const Device& device, 
 				const PipelineConfigInfo& configInfo, 
 				const std::string& vertFilePath, 
 				const std::string& fragFilePath);
@@ -42,16 +42,16 @@ namespace fengine {
 			static void defaultPipeLineConfigInfo(PipelineConfigInfo& configInfo);
 
 		private:
-			static std::vector<char> readFile(const std::string& filePath);
+			static std::vector<char> _readFile(const std::string& filePath);
 
-			void createGraphicsPipeline(
+			void _createGraphicsPipeline(
 				const PipelineConfigInfo& configInfo, 
 				const std::string& vertFilePath, 
 				const std::string& fragFilePath);
 
-			void createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
+			void _createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
 
-			Device& m_device;
+			const Device& m_device;
 			VkPipeline m_graphicsPipeline;
 			VkShaderModule m_vertShaderModule;
 			VkShaderModule m_fragShaderModule;

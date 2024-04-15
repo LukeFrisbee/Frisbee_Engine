@@ -22,6 +22,8 @@ namespace fengine {
 		glm::vec3 camPos{};
 		glm::vec3 camRot{};
 
+		std::string debugString{};
+
 		// PBR
 		glm::vec3 albedo{ 1.0, 0.0, 0.0 };
 		float metallic = 0.0;

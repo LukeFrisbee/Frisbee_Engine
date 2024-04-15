@@ -20,10 +20,14 @@ namespace fengine {
 
 			void setViewYXZ(glm::vec3 position, glm::vec3 rotation);
 
+			void setPosition(glm::vec3 position) { m_position = position; }
+
+			const glm::vec3& getPosition() const { return m_position; }
 			const glm::mat4& getProjection() const { return m_projectionMatrix; }
 			const glm::mat4& getView() const { return m_viewMatrix; }
 
 		private:
+			glm::vec3 m_position{};
 			glm::mat4 m_projectionMatrix { 1.0f };
 			glm::mat4 m_viewMatrix { 1.0f };
 	};
