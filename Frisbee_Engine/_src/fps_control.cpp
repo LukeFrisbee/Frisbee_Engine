@@ -3,37 +3,53 @@
 #include <limits>
 #include "global_data.h"
 
+#include "imgui_impl_glfw.h"
+
 namespace fengine {
-	void FPSControl::moveInPlaneXZ(GLFWwindow* glfwWindow, float dt, GameObject& gameObject)
+	void FPSControl::moveInPlaneXZ(const FWindow& fWindow, float dt, GameObject& gameObject)
 	{
+		auto* glfwWindow = fWindow.getGLFWwindow();
+
 		// Rotation
 		{
-			glm::vec3 rotate{ 0.0f };
+			auto extent = fWindow.getExtent();
+			auto xCenter = extent.width / 2;
+			auto yCenter = extent.height / 2;
 
-			double xPos;
-			double yPos;
-			glfwGetCursorPos(glfwWindow, &xPos, &yPos);
-			double deltaX = xPos - m_lastX;
-			double deltaY = yPos - m_lastY;
-
-			rotate.x += -deltaY;
-			rotate.y += deltaX;
-
-			GlobalData::getInstance().debugString += 
-				std::to_string(xPos) + " " + std::to_string(yPos) + "\n"
-				+ std::to_string(m_lastX) + " " + std::to_string(m_lastY) + "\n";
-
-			// rotate if non-zero
-			if (rotate.x != 0 || rotate.y != 0) {
-				gameObject.transform.rotation += m_lookSpeed * dt * glm::normalize(rotate);
+			if (glfwGetKey(glfwWindow, keys.lockCursor) == GLFW_PRESS) {
+				if (!m_isPressingEscape) {
+					m_isLocked = (m_isLocked ? false : true);
+					glfwSetCursorPos(glfwWindow, xCenter, yCenter);
+					m_isPressingEscape = true;
+				}
+			} else {
+				m_isPressingEscape = false;
 			}
 
-			// clamp rotation
-			//gameObject.transform.rotation.x = glm::clamp(gameObject.transform.rotation.x, -1.5f, 1.5f);
-			//gameObject.transform.rotation.y = glm::mod(gameObject.transform.rotation.y, glm::two_pi<float>());
+			if (m_isLocked) {
+				ImGui::SetMouseCursor(ImGuiMouseCursor_None);
 
-			m_lastX = xPos;
-			m_lastY = yPos;
+				double xPos, yPos;
+				glfwGetCursorPos(glfwWindow, &xPos, &yPos);
+				double deltaX = xPos - xCenter;
+				double deltaY = yPos - yCenter;
+
+				glm::vec3 rotate{ 0.0f };
+				rotate.x += -deltaY;
+				rotate.y += deltaX;
+
+				// Rotate
+				if (rotate.x != 0 || rotate.y != 0) {
+					gameObject.transform.rotation += m_lookSpeed * dt * rotate; // *glm::normalize(rotate);
+				}
+				// Clamp rotation
+				gameObject.transform.rotation.x = glm::clamp(gameObject.transform.rotation.x, -1.5f, 1.5f);
+				gameObject.transform.rotation.y = glm::mod(gameObject.transform.rotation.y, glm::two_pi<float>());
+
+				glfwSetCursorPos(glfwWindow, xCenter, yCenter);
+			} else {
+				ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
+			}
 		}
 
 		// Movement
@@ -54,7 +70,7 @@ namespace fengine {
 
 			// move if non-zero
 			if (glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon()) {
-				gameObject.transform.translation += m_lookSpeed * dt * glm::normalize(moveDir);
+				gameObject.transform.translation += m_moveSpeed * dt * glm::normalize(moveDir);
 			}
 		}
 	}

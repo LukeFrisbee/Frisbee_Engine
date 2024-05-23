@@ -30,6 +30,10 @@ namespace fengine {
 		float roughness = 0.3;
 		float ao = 0.02;
 
+		// LineCast
+		glm::vec3 lineStart{ 0.0 };
+		glm::vec3 lineEnd{ 1.0 };
+
 		static GlobalData& getInstance()
 		{
 			static GlobalData instance; // Guaranteed to be destroyed.

@@ -8,7 +8,6 @@
 #include "glm/glm.hpp"
 
 #include "device.h"
-#include "buffer.h"
 
 namespace fengine {
 	class Model {
@@ -49,12 +48,14 @@ namespace fengine {
 		private:
 			Device& m_device;
 
-			std::unique_ptr<Buffer> m_vertexBuffer;
+			VkBuffer m_vertexBuffer;
+			VmaAllocation m_vertexBufferAllocation;
 			uint32_t m_vertexCount;
 
-			bool hasIndexBuffer = false;
-			std::unique_ptr<Buffer> m_indexBuffer;
+			VkBuffer m_indexBuffer;
+			VmaAllocation m_indexBufferAllocation;
 			uint32_t m_indexCount;
+			bool hasIndexBuffer = false;
 
 			void createVertexBuffers(const std::vector<Vertex>& vertices);
 			void createIndexBuffers(const std::vector<uint32_t>& indices);

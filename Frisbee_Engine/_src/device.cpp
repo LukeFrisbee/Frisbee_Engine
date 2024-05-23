@@ -57,9 +57,11 @@ namespace fengine {
         pickPhysicalDevice();
         createLogicalDevice();
         createCommandPool();
+        _createVMAAllocator();
     }
 
     Device::~Device() {
+        vmaDestroyAllocator(allocator_);
         vkDestroyCommandPool(device_, commandPool, nullptr);
         vkDestroyDescriptorPool(device_, descriptorPool_, nullptr);
         vkDestroyDevice(device_, nullptr);
@@ -72,6 +74,18 @@ namespace fengine {
         vkDestroyInstance(instance_, nullptr);
     }
 
+    void Device::_createVMAAllocator() {
+        VmaAllocatorCreateInfo info{};
+        info.device = device_;
+        //allocatorCreateInfo.flags
+        info.instance = instance_;
+        info.physicalDevice = physicalDevice_;
+        //info.vulkanApiVersion = 
+        //info.vulkanApiVersion = GetVulkanApiVersion();
+
+        vmaCreateAllocator(&info, &allocator_);
+    }
+    
     void Device::createInstance() {
         if (enableValidationLayers && !checkValidationLayerSupport()) {
             throw std::runtime_error("validation layers requested, but not available!");

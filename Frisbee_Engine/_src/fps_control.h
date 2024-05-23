@@ -17,16 +17,19 @@ namespace fengine {
 			int lookRight = GLFW_KEY_RIGHT;
 			int lookUp = GLFW_KEY_UP;
 			int lookDown = GLFW_KEY_DOWN;
+
+			int lockCursor = GLFW_KEY_ESCAPE;
 		};
 
-		void moveInPlaneXZ(GLFWwindow* window, float dt, GameObject& gameObject);
+		void moveInPlaneXZ(const FWindow& fWindow, float dt, GameObject& gameObject);
 
 	private:
 		KeyMappings keys{};
-		float m_moveSpeed{ 3.0f };
-		float m_lookSpeed{ 1.5f };
 
-		double m_lastX{};
-		double m_lastY{};
+		float m_moveSpeed{ 3.0f };
+		float m_lookSpeed{ 0.2f };
+
+		bool m_isPressingEscape{ false };
+		bool m_isLocked{ true };
 	};
 }

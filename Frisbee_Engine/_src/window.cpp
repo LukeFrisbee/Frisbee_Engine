@@ -2,8 +2,6 @@
 
 #include <stdexcept>
 
-#include <imgui_impl_glfw.h>
-
 namespace fengine {
 
 	FWindow::FWindow(int width, int height, std::string name)

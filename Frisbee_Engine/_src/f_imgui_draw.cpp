@@ -87,10 +87,14 @@ namespace fengine {
 		auto height = io.DisplaySize.y / 1.5f;
 		ImGui::SetWindowSize({ width, height }, ImGuiCond_Once);
 
+		// Debug
 		if (ImGui::CollapsingHeader("Debug", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Text(globalData.debugString.c_str());
 			globalData.debugString = "";
+
+			ImGui::DragFloat3("LineStart", (float*)&globalData.lineStart, 0.1f);
+			ImGui::DragFloat3("LineEnd", (float*)&globalData.lineEnd, 0.1f);
 		}
 
 		// Info
@@ -109,10 +113,10 @@ namespace fengine {
 		// Pipeline
 		if (ImGui::CollapsingHeader("Pipeline", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			ImGui::ColorEdit4("Color", (float*)&globalData.albedo);
+			ImGui::ColorEdit3("Color", (float*)&globalData.albedo);
 
-			ImGui::DragFloat("Roughness", &globalData.roughness, 0.01f, 0.0f, 1.0f);
 			ImGui::DragFloat("Metallic", &globalData.metallic, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("Roughness", &globalData.roughness, 0.01f, 0.0f, 1.0f);
 			ImGui::DragFloat("Ao", &globalData.ao, 0.01f, 0.0f, 1.0f);
 
 			float metallic = 0.0;
@@ -122,7 +126,6 @@ namespace fengine {
 		}
 
 		// Swap Chain
-		//ImGui::Spacing();
 		if (ImGui::CollapsingHeader("Swap Chain", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			auto presentModeText = "Present Mode: " + globalData.swapPresetMode;

@@ -7,18 +7,18 @@ layout (location = 2) in vec2 uv;
 layout (location = 0) out vec3 outPosition;
 layout (location = 1) out vec3 outNormal;
 
-// descriptor set
-layout(set = 0, binding = 0) uniform GlobalUbo {
+layout(set = 0, binding = 0) uniform uboGlobal {
 	mat4 projectionViewMatrix;
 	vec3 lightPos;
 	vec3 camPos;
+} ubo;
 
-	// pbr
+layout(set = 0, binding = 1) uniform uboPBR {
 	vec3 albedo;
 	float metallic;
 	float roughness;
 	float ao;
-} ubo;
+} pbr;
 
 // push
 layout(push_constant) uniform Push {

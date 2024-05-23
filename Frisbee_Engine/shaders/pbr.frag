@@ -6,18 +6,18 @@ layout (location = 1) in vec3 normalWorldSpace;
 
 layout (location = 0) out vec4 outColor;
 
-// descriptor set
-layout(set = 0, binding = 0) uniform GlobalUbo {
+layout(set = 0, binding = 0) uniform uboGlobal {
 	mat4 projectionViewMatrix;
 	vec3 lightPos;
-    vec3 camPos;
+	vec3 camPos;
+} ubo;
 
-    // pbr
-    vec3 albedo;
+layout(set = 0, binding = 1) uniform uboPBR {
+	vec3 albedo;
 	float metallic;
 	float roughness;
 	float ao;
-} ubo;
+} pbr;
 
 // push
 layout(push_constant) uniform Push {
@@ -80,7 +80,7 @@ void main()
    vec3 V = normalize(ubo.camPos - worldPos);
    
    vec3 F0 = vec3(0.04); 
-   F0 = mix(F0, ubo.albedo, ubo.metallic);
+   F0 = mix(F0, pbr.albedo, pbr.metallic);
            
    // reflectance equation
    vec3 Lo = vec3(0.0);
@@ -93,13 +93,13 @@ void main()
    vec3 radiance     = vec3(lightColor * attenuation);        
        
    // cook-torrance brdf
-   float NDF = DistributionGGX(N, H, ubo.roughness);        
-   float G   = GeometrySmith(N, V, L, ubo.roughness);      
+   float NDF = DistributionGGX(N, H, pbr.roughness);        
+   float G   = GeometrySmith(N, V, L, pbr.roughness);      
    vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);       
        
    vec3 kS = F;
    vec3 kD = vec3(1.0) - kS;
-   kD *= 1.0 - ubo.metallic;	  
+   kD *= 1.0 - pbr.metallic;	  
        
    vec3 numerator    = NDF * G * F;
    float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
@@ -107,9 +107,9 @@ void main()
            
    // add to outgoing radiance Lo
    float NdotL = max(dot(N, L), 0.0);                
-   Lo += (kD * ubo.albedo / PI + specular) * radiance * NdotL; 
+   Lo += (kD * pbr.albedo / PI + specular) * radiance * NdotL; 
    
-   vec3 ambient = vec3(0.03) * ubo.albedo * ubo.ao;
+   vec3 ambient = vec3(0.03) * pbr.albedo * pbr.ao;
    vec3 color = ambient + Lo;
    
    color = color / (color + vec3(1.0));
