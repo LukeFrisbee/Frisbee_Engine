@@ -53,13 +53,13 @@ namespace fengine {
 			ubo.lightPos = gameObjects[1].transform.translation;
 			m_shaders[obj.shaderId]->updateDescriptorSets(ubo, 0, frameInfo.frameIndex);
 
-			//auto& gd = GlobalData::getInstance();
-			//uboPBR pbr{};
-			//pbr.albedo = gd.albedo;
-			//pbr.metallic = gd.metallic;
-			//pbr.roughness = gd.roughness;
-			//pbr.ao = gd.ao;
-			//m_shaders[obj.shaderId]->updateDescriptorSets(pbr, 1, frameInfo.frameIndex);
+			auto& gd = GlobalData::getInstance();
+			uboPBR pbr{};
+			pbr.albedo = gd.albedo;
+			pbr.metallic = gd.metallic;
+			pbr.roughness = gd.roughness;
+			pbr.ao = gd.ao;
+			m_shaders[obj.shaderId]->updateDescriptorSets(pbr, 1, frameInfo.frameIndex);
 
 			// Bind + Draw
 			obj.model->bind(frameInfo.commandBuffer);

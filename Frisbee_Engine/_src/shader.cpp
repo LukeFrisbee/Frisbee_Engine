@@ -89,21 +89,21 @@ namespace fengine {
 				&m_uniforms[0].allocationInfos[frameIndex]);
 		}
 
-		//for (int frameIndex = 0; frameIndex < SwapChain::MAX_FRAMES_IN_FLIGHT; frameIndex++) {
-		//	// Staging Buffer
-		//	VkBufferCreateInfo bufferCreateInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-		//	bufferCreateInfo.size = sizeof(uboPBR);
-		//	bufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-		//	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		//	VmaAllocationCreateInfo allocCreateInfo = {};
-		//	allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
-		//	allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
-		//	
-		//	vmaCreateBuffer(m_device.vmaAllocator(), &bufferCreateInfo, &allocCreateInfo,
-		//		&m_uniforms[1].buffers[frameIndex],
-		//		&m_uniforms[1].allocations[frameIndex],
-		//		&m_uniforms[1].allocationInfos[frameIndex]);
-		//}
+		for (int frameIndex = 0; frameIndex < SwapChain::MAX_FRAMES_IN_FLIGHT; frameIndex++) {
+			// Staging Buffer
+			VkBufferCreateInfo bufferCreateInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+			bufferCreateInfo.size = sizeof(uboPBR);
+			bufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+			bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			VmaAllocationCreateInfo allocCreateInfo = {};
+			allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
+			allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+			
+			vmaCreateBuffer(m_device.vmaAllocator(), &bufferCreateInfo, &allocCreateInfo,
+				&m_uniforms[1].buffers[frameIndex],
+				&m_uniforms[1].allocations[frameIndex],
+				&m_uniforms[1].allocationInfos[frameIndex]);
+		}
 
 		m_globalDescriptorPool = DescriptorPool::Builder(m_device)
 			.setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)

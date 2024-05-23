@@ -115,7 +115,7 @@ namespace fengine {
 				"C:\\Users\\lukeb\\_Projects\\C++\\Frisbee_Engine\\Frisbee_Engine\\models\\jeep.obj");
 			jeep.model = model;	
 			Shader::Settings shaderSettings{};
-			jeep.shaderId = m_renderSystem.createShader("shaders/albedo.vert.spv", "shaders/albedo.frag.spv", shaderSettings);
+			jeep.shaderId = m_renderSystem.createShader("shaders/pbr.vert.spv", "shaders/pbr.frag.spv", shaderSettings);
 			jeep.transform.translation = { 0.0f, 0.0f, 0.0f };
 			jeep.transform.rotation = { glm::radians(180.0f), 0.0f, 0.0f };
 			m_gameObjects.push_back(std::move(jeep));

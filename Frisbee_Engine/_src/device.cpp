@@ -61,6 +61,7 @@ namespace fengine {
     }
 
     Device::~Device() {
+        vmaDestroyAllocator(allocator_);
         vkDestroyCommandPool(device_, commandPool, nullptr);
         vkDestroyDescriptorPool(device_, descriptorPool_, nullptr);
         vkDestroyDevice(device_, nullptr);
@@ -462,7 +463,7 @@ namespace fengine {
         VkBufferUsageFlags usage,
         VkMemoryPropertyFlags properties,
         VkBuffer& buffer,
-        VkDeviceMemory& /*bufferMemory*/) {
+        VkDeviceMemory& bufferMemory) {
         VkBufferCreateInfo bufferInfo{};
         bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         bufferInfo.size = size;

@@ -68,7 +68,7 @@ namespace fengine {
 			std::vector<VmaAllocationInfo> allocationInfos = std::vector<VmaAllocationInfo>(SwapChain::MAX_FRAMES_IN_FLIGHT);
 		};
 
-		std::vector<VMABuffer> m_uniforms = std::vector<VMABuffer>(1);
+		std::vector<VMABuffer> m_uniforms = std::vector<VMABuffer>(2);
 		
 		//std::vector<std::unique_ptr<Buffer>> m_uboBuffersTWO = std::vector<std::unique_ptr<Buffer>>(SwapChain::MAX_FRAMES_IN_FLIGHT);
 
