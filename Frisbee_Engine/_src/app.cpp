@@ -11,9 +11,13 @@
 #include "global_data.h"
 #include "buffer.h"
 
+#include "physics/physics_sphere.h"; 
+#include "physics/ray_cast.h"
+
+#include <iostream>
+
 namespace fengine {
 	App::App() {
-		m_renderSystem.createShader("shaders/pbr.vert.spv", "shaders/pbr.frag.spv");
 		loadGameObjects();
 	}
 
@@ -25,8 +29,8 @@ namespace fengine {
 		Camera camera{};
 		camera.setViewDirection(glm::vec3{}, glm::vec3(0.0f, 0.0f, 1.0f));
 		auto cameraObject = GameObject::createGameObject();
-		KeyboardMovement cameraMovement{};
-		//FPSControl fpsControl{};
+		//KeyboardMovement cameraMovement{};
+		FPSControl fpsControl{};
 
 		// Timing
 		auto currentTime = std::chrono::high_resolution_clock::now();
@@ -34,6 +38,8 @@ namespace fengine {
 		int fpsCounter = 0;
 		auto& globalData = GlobalData::getInstance();
 		globalData.fps = 0;
+
+		PhysicsSphere physicsSphere{ glm::vec3{0.0, 0.0, 0.0}, 1.5 };
 
 		while (!m_window.shouldClose()) {
 			glfwPollEvents();
@@ -52,14 +58,22 @@ namespace fengine {
 				timeSinceLastSecond = std::chrono::steady_clock::now();
 			}
 
+			RayCast raycast{};
+			PhysicsShape* shape = nullptr;
+			if (raycast.castLine(shape, globalData.lineStart, globalData.lineEnd))
+			{
+				globalData.debugString += "found shape!\n";
+			}
+
 			// Camera
-			cameraMovement.moveInPlaneXZ(m_window.getGLFWwindow(), frameTime, cameraObject);
-			//fpsControl.moveInPlaneXZ(m_window.getGLFWwindow(), frameTime, cameraObject);
+			//cameraMovement.moveInPlaneXZ(m_window.getGLFWwindow(), frameTime, cameraObject);
+			fpsControl.moveInPlaneXZ(m_window, frameTime, cameraObject);
 			camera.setViewYXZ(cameraObject.transform.translation, cameraObject.transform.rotation);
 			camera.setPosition(cameraObject.transform.translation);
 
 			globalData.camPos = cameraObject.transform.translation;
 			globalData.camRot = cameraObject.transform.rotation;
+
 			// TODO: Implement on window resize rather than in run loop
 			float aspect = m_renderer.getAspectRatio();
 			camera.setPerspectiveProject(glm::radians(60.0f), aspect, 0.1f, 100.0f);
@@ -79,6 +93,9 @@ namespace fengine {
 				m_renderer.endFrame();
 			}
 
+			auto isColliding = physicsSphere.collisionAtPos(cameraObject.transform.translation);
+			globalData.debugString += std::to_string(isColliding) + '\n';
+
 			fpsCounter++;
 		}
 
@@ -92,25 +109,29 @@ namespace fengine {
 		// TEMPORARY -> need to implement the GameObject system
 
 		// JEEP
-		std::shared_ptr<Model> model = Model::createModelFromFile(m_device, 
-			"C:\\Users\\lukeb\\_Projects\\C++\\Frisbee_Engine\\Frisbee_Engine\\models\\jeep.obj");
-
-		auto jeep = GameObject::createGameObject();
-		jeep.model = model;
-		jeep.transform.translation = { 0.0f, 0.0f, 0.0f };
-		//gameObject.transform.scale = { 2.0f, 2.0f, 2.0f };
-		jeep.transform.rotation = { glm::radians(180.0f), 0.0f, 0.0f };
-		m_gameObjects.push_back(std::move(jeep));
+		{
+			auto jeep = GameObject::createGameObject();
+			std::shared_ptr<Model> model = Model::createModelFromFile(m_device,
+				"C:\\Users\\lukeb\\_Projects\\C++\\Frisbee_Engine\\Frisbee_Engine\\models\\jeep.obj");
+			jeep.model = model;	
+			Shader::Settings shaderSettings{};
+			jeep.shaderId = m_renderSystem.createShader("shaders/albedo.vert.spv", "shaders/albedo.frag.spv", shaderSettings);
+			jeep.transform.translation = { 0.0f, 0.0f, 0.0f };
+			jeep.transform.rotation = { glm::radians(180.0f), 0.0f, 0.0f };
+			m_gameObjects.push_back(std::move(jeep));
+		}
 
 		// CUBE
-		model = Model::createModelFromFile(m_device,
-			"C:\\Users\\lukeb\\_Projects\\C++\\Frisbee_Engine\\Frisbee_Engine\\models\\cube.obj");
-
-		auto cube = GameObject::createGameObject();
-		cube.model = model;
-		cube.transform.translation = { 1.0f, -3.0f, -1.0f };
-		cube.transform.scale = { 0.25f, 0.25f, 0.25f };
-		//cube.transform.rotation = { glm::radians(180.0f), 0.0f, 0.0f };
-		m_gameObjects.push_back(std::move(cube));
+		{
+			auto cube = GameObject::createGameObject();
+			std::shared_ptr<Model> model = Model::createModelFromFile(m_device,
+				"C:\\Users\\lukeb\\_Projects\\C++\\Frisbee_Engine\\Frisbee_Engine\\models\\cube.obj");
+			cube.model = model;
+			Shader::Settings shaderSettings{};
+			cube.shaderId = m_renderSystem.createShader("shaders/albedo.vert.spv", "shaders/albedo.frag.spv", shaderSettings);
+			cube.transform.translation = { 1.0f, -3.0f, -1.0f };
+			cube.transform.scale = { 0.25f, 0.25f, 0.25f };
+			m_gameObjects.push_back(std::move(cube));
+		}
 	}
 }

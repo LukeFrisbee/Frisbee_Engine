@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "window.h"
+#include "vma/vk_mem_alloc.h"
 
 namespace fengine {
 
@@ -45,6 +46,7 @@ namespace fengine {
         VkSurfaceKHR surface() const { return surface_; }
         VkQueue graphicsQueue() const { return graphicsQueue_; }
         VkQueue presentQueue() const { return presentQueue_; }
+        VmaAllocator vmaAllocator() const { return allocator_; }
 
         SwapChainSupportDetails getSwapChainSupport() { return querySwapChainSupport(physicalDevice_); }
         uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
@@ -80,6 +82,7 @@ namespace fengine {
         void pickPhysicalDevice();
         void createLogicalDevice();
         void createCommandPool();
+        void _createVMAAllocator();
 
         // helper functions
         bool isDeviceSuitable(VkPhysicalDevice device);
@@ -102,6 +105,7 @@ namespace fengine {
         VkSurfaceKHR surface_;
         VkQueue graphicsQueue_;
         VkQueue presentQueue_;
+        VmaAllocator allocator_;
 
         const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
         const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };

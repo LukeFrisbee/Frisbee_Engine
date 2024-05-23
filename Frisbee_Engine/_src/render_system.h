@@ -20,7 +20,7 @@ namespace fengine {
 			RenderSystem(const RenderSystem&) = delete;
 			RenderSystem& operator=(const RenderSystem&) = delete;
 
-			void createShader(const std::string& vertexFilePath, const std::string& fragmentFilePath);
+			int createShader(const std::string& vertexFilePath, const std::string& fragmentFilePath, const Shader::Settings& settings);
 			void renderGameObjects(FrameInfo& frameInfo, std::vector<GameObject>& gameObjects);
 
 		private:

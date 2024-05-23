@@ -33,6 +33,16 @@ namespace fengine {
 
 	Model::~Model()
 	{
+		if (m_vertexBuffer != VK_NULL_HANDLE && m_vertexBufferAllocation != VK_NULL_HANDLE) {
+			vmaDestroyBuffer(m_device.vmaAllocator(), m_vertexBuffer, m_vertexBufferAllocation);
+			m_vertexBuffer = VK_NULL_HANDLE;
+			m_vertexBufferAllocation = VK_NULL_HANDLE;
+		}
+		if (hasIndexBuffer && m_indexBuffer != VK_NULL_HANDLE && m_indexBufferAllocation != VK_NULL_HANDLE) {
+			vmaDestroyBuffer(m_device.vmaAllocator(), m_indexBuffer, m_indexBufferAllocation);
+			m_indexBuffer = VK_NULL_HANDLE;
+			m_indexBufferAllocation = VK_NULL_HANDLE;
+		}
 	}
 
 	std::vector<VkVertexInputBindingDescription> Model::Vertex::getBindingDescriptions()
@@ -57,12 +67,11 @@ namespace fengine {
 
 	void Model::bind(VkCommandBuffer commandBuffer)
 	{
-		VkBuffer buffers[] = { m_vertexBuffer->getBuffer()};
 		VkDeviceSize offsets[] = {0};
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
-
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &m_vertexBuffer, offsets);
+		
 		if (hasIndexBuffer)
-			vkCmdBindIndexBuffer(commandBuffer, m_indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+			vkCmdBindIndexBuffer(commandBuffer, m_indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 	}
 
 	void Model::draw(VkCommandBuffer commandBuffer)
@@ -140,32 +149,38 @@ namespace fengine {
 	{
 		m_vertexCount = static_cast<uint32_t>(vertices.size());
 		assert(m_vertexCount >= 3 && "Vertex count must be greater than 3");
-		VkDeviceSize bufferSize = sizeof(vertices[0]) * m_vertexCount;
-		uint32_t vertexSize = sizeof(vertices[0]);
+		size_t bufferSize = sizeof(Vertex) * m_vertexCount;
+		
+		// Staging Buffer
+		VkBufferCreateInfo stagingBufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+		stagingBufferInfo.size = bufferSize;
+		stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+		stagingBufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		VmaAllocationCreateInfo stagingAllocCreateInfo = {};
+		stagingAllocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
+		stagingAllocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+		VkBuffer stagingBuffer;
+		VmaAllocation stagingAlloc;
+		vmaCreateBuffer(m_device.vmaAllocator(), &stagingBufferInfo, &stagingAllocCreateInfo, &stagingBuffer, &stagingAlloc, nullptr);
+		
+		void* mappedData;
+		vmaMapMemory(m_device.vmaAllocator(), stagingAlloc, &mappedData);
+		memcpy(mappedData, vertices.data(), bufferSize);
+		vmaUnmapMemory(m_device.vmaAllocator(), stagingAlloc);
 
-		// STAGING BUFFER
-		Buffer stagingBuffer = Buffer(
-			m_device,
-			vertexSize,
-			m_vertexCount,
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-		);
+		// Vertex Buffer
+		VkBufferCreateInfo vertexBufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+		vertexBufferInfo.size = bufferSize;
+		vertexBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+		vertexBufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		VmaAllocationCreateInfo vertexAllocCreateInfo = {};
+		vertexAllocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
+		vertexAllocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+		vmaCreateBuffer(m_device.vmaAllocator(), &vertexBufferInfo, &vertexAllocCreateInfo, &m_vertexBuffer, &m_vertexBufferAllocation, nullptr);
 
-		stagingBuffer.map();
-		stagingBuffer.writeToBuffer((void*)vertices.data());
+		m_device.copyBuffer(stagingBuffer, m_vertexBuffer, bufferSize);
 
-
-		// VERTEX to DLB from STAGING BUFFER
-		m_vertexBuffer = std::make_unique<Buffer>(
-			m_device,
-			vertexSize,
-			m_vertexCount,
-			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-		);
-
-		m_device.copyBuffer(stagingBuffer.getBuffer(), m_vertexBuffer->getBuffer(), bufferSize);
+		vmaDestroyBuffer(m_device.vmaAllocator(), stagingBuffer, stagingAlloc);
 	}
 
 	void Model::createIndexBuffers(const std::vector<uint32_t>& indices)
@@ -173,33 +188,44 @@ namespace fengine {
 		m_indexCount = static_cast<uint32_t>(indices.size());
 		hasIndexBuffer = m_indexCount > 0;
 
-		if (!hasIndexBuffer) 
+		if (!hasIndexBuffer)
 			return;
 
 		VkDeviceSize bufferSize = sizeof(indices[0]) * m_indexCount;
 		uint32_t indexSize = sizeof(indices[0]);
 
-		// STAGING BUFFER
-		Buffer stagingBuffer = Buffer(
-			m_device,
-			indexSize,
-			m_indexCount,
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-		);
+		// Staging Buffer
+		VkBufferCreateInfo stagingBufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+		stagingBufferInfo.size = bufferSize;
+		stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+		stagingBufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		VmaAllocationCreateInfo stagingAllocCreateInfo = {};
+		stagingAllocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
+		stagingAllocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+		VkBuffer stagingBuffer;
+		VmaAllocation stagingAlloc;
+		VmaAllocationInfo stagingAllocInfo;
+		vmaCreateBuffer(m_device.vmaAllocator(), &stagingBufferInfo, &stagingAllocCreateInfo, &stagingBuffer, &stagingAlloc, &stagingAllocInfo);
 
-		stagingBuffer.map();
-		stagingBuffer.writeToBuffer((void*)indices.data());
+		memcpy(stagingAllocInfo.pMappedData, indices.data(), bufferSize);
+		//vmaCreateBuffer(m_device.vmaAllocator(), &stagingBufferInfo, &stagingAllocCreateInfo, &stagingBuffer, &stagingAlloc, nullptr);
 
-		// INDEX to DLB from STAGING BUFFER
-		m_indexBuffer = std::make_unique<Buffer>(
-			m_device,
-			indexSize,
-			m_indexCount,
-			VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-		);
+		//void* mappedData;
+		//vmaMapMemory(m_device.vmaAllocator(), stagingAlloc, &mappedData);
+		//memcpy(mappedData, indices.data(), bufferSize);
+		//vmaUnmapMemory(m_device.vmaAllocator(), stagingAlloc);
 
-		m_device.copyBuffer(stagingBuffer.getBuffer(), m_indexBuffer->getBuffer(), bufferSize);
+		// Vertex Buffer
+		VkBufferCreateInfo indexBufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+		indexBufferInfo.size = bufferSize;
+		indexBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+		indexBufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		VmaAllocationCreateInfo indexAllocCreateInfo = {};
+		indexAllocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
+		indexAllocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+		vmaCreateBuffer(m_device.vmaAllocator(), &indexBufferInfo, &indexAllocCreateInfo, &m_indexBuffer, &m_indexBufferAllocation, nullptr);
+
+		m_device.copyBuffer(stagingBuffer, m_indexBuffer, bufferSize);
+		vmaDestroyBuffer(m_device.vmaAllocator(), stagingBuffer, stagingAlloc);
 	}
 }

@@ -1,8 +1,10 @@
-﻿# SHADERS
-# Define shader source file paths
+﻿# Executable and Libraries
+file(GLOB sources _src/*.cpp _src/physics/*.cpp)
+add_executable(Frisbee_Engine ${sources})
+
+# SHADERS
 file(GLOB_RECURSE SHADER_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.vert" "${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.frag")
 
-# Add custom commands and targets for shader compilation
 foreach(SHADER_SOURCE ${SHADER_SOURCES})
     get_filename_component(SHADER_NAME ${SHADER_SOURCE} NAME)
     set(SHADER_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/shaders/${SHADER_NAME}.spv")
@@ -15,9 +17,8 @@ foreach(SHADER_SOURCE ${SHADER_SOURCES})
     )
     list(APPEND SHADER_OUTPUTS ${SHADER_OUTPUT})
 endforeach()
-
 add_custom_target(ShadersTarget DEPENDS ${SHADER_OUTPUTS})
-# ^ SHADERS
+add_dependencies(Frisbee_Engine ShadersTarget)
 
 # GLM
 include_directories("vendor/glm")
@@ -47,12 +48,17 @@ add_library("imgui" STATIC ${IMGUI_SOURCES})
 target_include_directories("imgui" PUBLIC ${IMGUI_INCLUDE_DIR})
 target_link_libraries("imgui" PRIVATE ${LIBRARIES})
 
-# Executable and Libraries
-file(GLOB sources _src/*.cpp _src/*.h)
-add_executable(Frisbee_Engine ${sources})
+set(JOBS_SOURCES
+    # ${JOBS_PRIVATE_INCLUDE_DIR}/jobs
+    ${JOBS_SOURCE_DIR}/main.cpp
+    ${JOBS_SOURCE_DIR}/example.cpp
+    ${JOBS_SOURCE_DIR}/example.h
+    ${JOBS_SOURCE_DIR}/jobs.h
+    ${JOBS_SOURCE_DIR}/atomic_counter.h
+)
 
-# Make sure shader compilation occurs before building the main target
-add_dependencies(Frisbee_Engine ShadersTarget)
+#VMA
+target_include_directories(Frisbee_Engine PUBLIC "vendor/vma")
 
 # Link libraries
 # set(LIBRARIES "glfw;Vulkan::Vulkan")

@@ -4,7 +4,6 @@
 #include <memory>
 
 #include <glm/gtc/matrix_transform.hpp>
-
 #include "model.h"
 
 namespace fengine {
@@ -30,19 +29,20 @@ namespace fengine {
             return GameObject{ currentId++ };
         }
 
-        GameObject(const GameObject&) = delete;
-        GameObject& operator=(const GameObject&) = delete;
-        GameObject(GameObject&&) = default;
-        GameObject& operator=(GameObject&&) = default;
-
         id_t getId() { return id; }
 
         std::shared_ptr<Model> model{};
+        int shaderId{};
         TransformComponent transform{};
 
     private:
         GameObject(id_t objId) : id{ objId } {}
-
         id_t id;
+
+    public:
+        GameObject(const GameObject&) = delete;
+        GameObject& operator=(const GameObject&) = delete;
+        GameObject(GameObject&&) = default;
+        GameObject& operator=(GameObject&&) = default;
     };
 } 
