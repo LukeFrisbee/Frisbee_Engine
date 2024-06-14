@@ -1,6 +1,7 @@
 # Manual Ignores
 /out/build
 /.vs
+/.vscode
 *.idb
 
 #CMake Github Ignore
