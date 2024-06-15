@@ -25,9 +25,9 @@ namespace fengine {
 
 		// PBR
 		glm::vec3 albedo{ 1.0, 0.0, 0.0 };
-		float metallic = 0.0;
-		float roughness = 0.3;
-		float ao = 0.02;
+		float metallic = 0.0f;
+		float roughness = 0.3f;
+		float ao = 0.02f;
 
 		// LineCast
 		glm::vec3 lineStart{ 0.0 };

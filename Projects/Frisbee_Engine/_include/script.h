@@ -3,8 +3,10 @@
 #include "input.h"
 #include "screen.h"
 #include "camera.h"
-#include "rope_render_object_holder.h"
+#include "render_object_holder.h"
 #include "model_builder.h"
+
+#include <iostream>
 
 namespace fengine {
 	class Script {

@@ -22,6 +22,14 @@ namespace fengine {
             return newId;
         }
 
+        RenderObject& getRenderObject(uint32_t id)
+        {
+            auto it = idToIndex.find(id);
+            if (it != idToIndex.end()) {
+                return renderObjects[it->second];
+            }
+        }
+
         void removeRenderObject(uint32_t id) {
             auto it = idToIndex.find(id);
             if (it != idToIndex.end()) {
@@ -43,9 +51,6 @@ namespace fengine {
             }
         }
 
-        std::vector<RenderObject>& getRenderObjects() {
-            return renderObjects;
-        }
 
         RenderObjectHolder(const RenderObjectHolder&) = delete;
         RenderObjectHolder& operator=(const RenderObjectHolder&) = delete;
@@ -53,10 +58,15 @@ namespace fengine {
         RenderObjectHolder& operator=(RenderObjectHolder&&) = delete;
 
     private:
+        std::vector<RenderObject>& getRenderObjects() {
+            return renderObjects;
+        }
 
         std::vector<RenderObject> renderObjects;
         std::vector<uint32_t> ids;
         std::unordered_map<uint32_t, size_t> idToIndex; // Map ID to index in vector
         int nextId = 0; // For generating new IDs
+
+        friend class App;
     };
 }

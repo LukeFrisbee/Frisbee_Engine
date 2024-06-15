@@ -39,6 +39,10 @@ namespace fengine {
 		m_camera.setViewDirection(glm::vec3{}, glm::vec3(0.0f, 0.0f, 0.5f));
 		RenderObject cameraObject = RenderObject();
 
+		for(auto& script : m_scripts) {
+			script->Start();
+		}
+
 		while (!m_window.shouldClose()) {
 			glfwPollEvents();
 
