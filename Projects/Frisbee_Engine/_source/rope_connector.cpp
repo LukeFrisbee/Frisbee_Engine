@@ -11,23 +11,7 @@
 namespace fengine {
 	void RopeConnector::Start() 
 	{
-			RenderObject rope = RenderObject();
-			Model::Data data{};
-			data.vertices =
-			{
-				{ { 0.0, 1.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
-				{ { 1.0, 1.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
-				{ { 0.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
-				{ { 1.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
-				{ { 0.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
-				{ { 0.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} }
-			};
-			rope.model = s_modelBuilder.BuildModel(data);
-			rope.shaderId = 1;
-			
-			std::cout << "test!\n";
-			activeRopeID = s_renderObjectHolder.addRenderObject(std::move(rope));
-			//_hanldeRope(ropeRenderID, glm::vec3{}, glm::vec3);
+		
 	}
 
 	void RopeConnector::Update() 
@@ -51,11 +35,19 @@ namespace fengine {
 		// Intersects Plane
 		if (t >= 0) {
 			glm::vec3 intersectionPoint = mouseWorldPos + t * direction;
-			if (s_input.getMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+			if (!hasActiveRope && s_input.getMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 			{
-				
+				hasActiveRope = true;
+				activeRopeID = _createRope();
+				_handleRope(activeRopeID, glm::vec3{}, intersectionPoint);
 			}
-			_handleRope(activeRopeID, glm::vec3{}, intersectionPoint);
+			else if (hasActiveRope && s_input.getMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+				s_renderObjectHolder.removeRenderObject(activeRopeID);
+				hasActiveRope = false;
+			}
+			else if (hasActiveRope) {
+				_handleRope(activeRopeID, glm::vec3{}, intersectionPoint);
+			}
 		}
 
 		RayCast raycast{};
@@ -84,7 +76,6 @@ namespace fengine {
 
 		std::vector<glm::vec3> vertices = {
 			fld, flu, frd, flu, fru, frd
-			//brd, blu, bld, brd, bru, blu
 		};
 
 		std::vector<Model::Vertex> vertexData =
@@ -99,5 +90,23 @@ namespace fengine {
 
 		auto& ropeRender = s_renderObjectHolder.getRenderObject(ropeRenderID);
 		ropeRender.model->updateVertexBuffers(vertexData);
+	}
+
+	uint32_t RopeConnector::_createRope() {
+		RenderObject rope = RenderObject();
+			Model::Data data{};
+			data.vertices =
+			{
+				{ { 0.0, 1.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
+				{ { 1.0, 1.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
+				{ { 0.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
+				{ { 1.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
+				{ { 0.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
+				{ { 0.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} }
+			};
+			rope.model = s_modelBuilder.BuildModel(data);
+			rope.shaderId = 1;
+			activeRopeID = s_renderObjectHolder.addRenderObject(std::move(rope));
+			return activeRopeID; 
 	}
 }
