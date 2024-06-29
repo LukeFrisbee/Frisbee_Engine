@@ -15,7 +15,7 @@ layout(set = 0, binding = 0) uniform uboGlobal {
 
 layout(set = 0, binding = 1) uniform uboPBR {
 	vec3 albedo;
-	float metallic;
+	float metallic;	
 	float roughness;
 	float ao;
 } pbr;

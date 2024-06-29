@@ -33,6 +33,7 @@ namespace fengine {
 			};
 
 			Model(Device& fDevice, const Model::Data& data);
+			Model(Device& fDevice, const std::string& filePath);
 			~Model();
 
 			Model(const Model&) = delete;
@@ -40,8 +41,6 @@ namespace fengine {
 
 			void bind(VkCommandBuffer commandBuffer);
 			void draw(VkCommandBuffer commandBuffer);
-
-
 			void updateVertexBuffers(const std::vector<Vertex>& vertices);
 
 		private:

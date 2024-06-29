@@ -15,6 +15,7 @@
 
 #include "render_object_holder.h"
 #include "model_builder.h"
+#include "ResourceLoader.h"
 
 namespace fengine { 
 	class App {
@@ -30,21 +31,25 @@ namespace fengine {
 		App& operator=(const App&) = delete;
 
 	private:
-		void _loadGameObjects();
-		void _renderLoop(RenderObject& cameraObject);
-		void _time(std::chrono::steady_clock::time_point& time);
+		void _renderLoop();
+		void _time();
 
-		FWindow m_window {WIDTH, HEIGHT, "Frisbee Engine"};
+		FWindow m_window { WIDTH, HEIGHT, "Frisbee Engine" };
 		Device m_device{ m_window };
 		Renderer m_renderer{ m_window, m_device };
-		RenderSystem m_renderSystem{ m_device, m_renderer.getRenderPass() };
 
+		RendererResources m_rendererResources{ m_device, m_renderer.getRenderPass() };
+		ModelBuilder m_modelBuilder{ m_device };
+
+		RenderSystem m_renderSystem{ m_device, m_rendererResources };
+		EditorUI m_editorUI{ m_window, m_device, m_renderer.getImageCount(), m_renderer.getRenderPass(), m_camera, m_rendererResources };
+		ResourceLoader m_resourceLoader{ m_rendererResources, m_modelBuilder, m_editorUI };
+
+		// Script Helpers
 		Input m_input{ m_window };
 		Screen m_screen{ m_window };
 		Camera m_camera{};
 
-		ModelBuilder m_modelBuilder{ m_device };
-		RenderObjectHolder m_renderObjectHolder{};
 
 		std::vector<std::unique_ptr<Script>> m_scripts;
 	};

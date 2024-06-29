@@ -3,8 +3,9 @@
 #include <vector>
 #include <unordered_map>
 
-#define TINYOBJLOADER_IMPLEMENTATION
+//#define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
+#include <stdexcept>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>

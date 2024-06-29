@@ -18,13 +18,13 @@ namespace fengine {
 	{
 		GlobalData& globalData = GlobalData::getInstance();
 
-		auto camPos = s_camera.getPosition();
+		auto camPos = m_camera.getPosition();
 
 		double xPos;
 		double yPos;
-		s_input.getMousePos(xPos, yPos);
+		m_input.getMousePos(xPos, yPos);
 
-		auto mouseWorldPos = s_camera.getMouseWorldPosition(xPos, yPos, s_screen.getWidth(), s_screen.getHeight());
+		auto mouseWorldPos = m_camera.getMouseWorldPosition(xPos, yPos, m_screen.getWidth(), m_screen.getHeight());
 
 		globalData.mousePos = mouseWorldPos;
 		auto direction = glm::normalize(mouseWorldPos - camPos);
@@ -35,14 +35,14 @@ namespace fengine {
 		// Intersects Plane
 		if (t >= 0) {
 			glm::vec3 intersectionPoint = mouseWorldPos + t * direction;
-			if (!hasActiveRope && s_input.getMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+			if (!hasActiveRope && m_input.getMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 			{
 				hasActiveRope = true;
 				activeRopeID = _createRope();
 				_handleRope(activeRopeID, glm::vec3{}, intersectionPoint);
 			}
-			else if (hasActiveRope && s_input.getMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
-				s_renderObjectHolder.removeRenderObject(activeRopeID);
+			else if (hasActiveRope && m_input.getMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+				m_rendererResources.removeRenderObject(activeRopeID);
 				hasActiveRope = false;
 			}
 			else if (hasActiveRope) {
@@ -88,25 +88,15 @@ namespace fengine {
 			{ frd, {0.0, 0.0, 1.0}, {0.0, 0.0} },
 		};
 
-		auto& ropeRender = s_renderObjectHolder.getRenderObject(ropeRenderID);
-		ropeRender.model->updateVertexBuffers(vertexData);
+		auto& ropeRender = m_rendererResources.getRenderObject(ropeRenderID);
+		//ropeRender.model->updateVertexBuffers(vertexData);
 	}
 
 	uint32_t RopeConnector::_createRope() {
 		RenderObject rope = RenderObject();
-			Model::Data data{};
-			data.vertices =
-			{
-				{ { 0.0, 1.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
-				{ { 1.0, 1.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
-				{ { 0.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
-				{ { 1.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
-				{ { 0.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
-				{ { 0.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} }
-			};
-			rope.model = s_modelBuilder.BuildModel(data);
-			rope.shaderId = 1;
-			activeRopeID = s_renderObjectHolder.addRenderObject(std::move(rope));
-			return activeRopeID; 
+		rope.modelId = 0; 
+		rope.shaderId = 1;
+		activeRopeID = m_rendererResources.addRenderObject(std::move(rope));
+		return activeRopeID; 
 	}
 }

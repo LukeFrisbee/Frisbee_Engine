@@ -30,8 +30,10 @@ namespace fengine {
 				assert(m_isFrameStarted && "Cannot getFrameIndex while a frame is not in progress");
 				return m_currentFrameIndex; 
 			}
+
 			VkRenderPass getRenderPass() const { return m_swapChain->getRenderPass(); }
 			float getAspectRatio() const { return m_swapChain->extentAspectRatio(); }
+			size_t getImageCount() const { return m_swapChain->imageCount(); }
 
 			VkCommandBuffer beginFrame();
 			void endFrame();
@@ -47,7 +49,6 @@ namespace fengine {
 			Device& m_device;
 			std::unique_ptr<SwapChain> m_swapChain;
 			std::vector<VkCommandBuffer> m_commandBuffers;
-			std::unique_ptr<FImguiDraw> m_draw;
 
 			void createCommandBuffers();
 			void freeCommandBuffers();

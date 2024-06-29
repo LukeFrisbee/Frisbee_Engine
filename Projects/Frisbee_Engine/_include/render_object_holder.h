@@ -51,7 +51,6 @@ namespace fengine {
             }
         }
 
-
         RenderObjectHolder(const RenderObjectHolder&) = delete;
         RenderObjectHolder& operator=(const RenderObjectHolder&) = delete;
         RenderObjectHolder(RenderObjectHolder&&) = delete;

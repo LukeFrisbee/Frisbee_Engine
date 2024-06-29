@@ -20,13 +20,13 @@ namespace fengine {
 	{
 		// Rotation
 		{
-			auto xCenter = s_screen.getWidth() / 2;
-			auto yCenter = s_screen.getHeight() / 2;
+			auto xCenter = m_screen.getWidth() / 2;
+			auto yCenter = m_screen.getHeight() / 2;
 
-			if (s_input.getKey(keys.lockCursor) == GLFW_PRESS) {
+			if (m_input.getKey(keys.lockCursor) == GLFW_PRESS) {
 				if (!m_isPressingEscape) {
 					m_isLocked = (m_isLocked ? false : true);
-					s_input.setCursorPos(xCenter, yCenter);
+					m_input.setCursorPos(xCenter, yCenter);
 					m_isPressingEscape = true;
 				}
 			}
@@ -38,7 +38,7 @@ namespace fengine {
 				ImGui::SetMouseCursor(ImGuiMouseCursor_None);
 
 				double xPos, yPos;
-				s_input.getMousePos(xPos, yPos);
+				m_input.getMousePos(xPos, yPos);
 				double deltaX = xPos - xCenter;
 				double deltaY = yPos - yCenter;
 
@@ -54,7 +54,7 @@ namespace fengine {
 				m_transform.rotation.x = glm::clamp(m_transform.rotation.x, -1.5f, 1.5f);
 				m_transform.rotation.y = glm::mod(m_transform.rotation.y, glm::two_pi<float>());
 
-				s_input.setCursorPos(xCenter, yCenter);
+				m_input.setCursorPos(xCenter, yCenter);
 			}
 			else {
 				ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
@@ -70,20 +70,21 @@ namespace fengine {
 
 			glm::vec3 moveDir{ 0.0f };
 
-			if (s_input.getKey(keys.moveForward) == GLFW_PRESS) moveDir += forwardDir;
-			if (s_input.getKey(keys.moveBackward) == GLFW_PRESS) moveDir -= forwardDir;
-			if (s_input.getKey(keys.moveRight) == GLFW_PRESS) moveDir += rightDir;
-			if (s_input.getKey(keys.moveLeft) == GLFW_PRESS) moveDir -= rightDir;
-			if (s_input.getKey(keys.moveUp) == GLFW_PRESS) moveDir += upDir;
-			if (s_input.getKey(keys.moveDown) == GLFW_PRESS) moveDir -= upDir;
+			if (m_input.getKey(keys.moveForward) == GLFW_PRESS) moveDir += forwardDir;
+			if (m_input.getKey(keys.moveBackward) == GLFW_PRESS) moveDir -= forwardDir;
+			if (m_input.getKey(keys.moveRight) == GLFW_PRESS) moveDir += rightDir;
+			if (m_input.getKey(keys.moveLeft) == GLFW_PRESS) moveDir -= rightDir;
+			if (m_input.getKey(keys.moveUp) == GLFW_PRESS) moveDir += upDir;
+			if (m_input.getKey(keys.moveDown) == GLFW_PRESS) moveDir -= upDir;
 
 			// move if non-zero
 			if (glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon()) {
+				auto deltaTime = LoopTime::getDeltaTime();
 				m_transform.translation += m_moveSpeed * LoopTime::getDeltaTime() * glm::normalize(moveDir);
 			}
 		}
 
-		s_camera.setViewYXZ(m_transform.translation, m_transform.rotation);
-		s_camera.setPosition(m_transform.translation);
+		m_camera.setViewYXZ(m_transform.translation, m_transform.rotation);
+		m_camera.setPosition(m_transform.translation);
 	}
 }

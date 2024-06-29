@@ -8,8 +8,6 @@ namespace fengine {
 		: m_window{ window }, m_device{ device } {
 		recreateSwapChain();
 		createCommandBuffers();
-
-		m_draw = std::make_unique<FImguiDraw>(m_window, m_device, m_swapChain->imageCount(), m_swapChain->getRenderPass());
 	}
 
 	Renderer::~Renderer()
@@ -110,9 +108,6 @@ namespace fengine {
 	void Renderer::endRenderPass(VkCommandBuffer commandBuffer) {
 		assert(m_isFrameStarted && "Can't call endRenderPass while a frame is not in progress");
 		assert(commandBuffer == getCurrentCommandBuffer() && "Can't endRenderPass on command buffer from a different frame");
-
-		m_draw->DrawFrame();
-		m_draw->RenderDrawData(commandBuffer);
 
 		vkCmdEndRenderPass(commandBuffer);
 	}

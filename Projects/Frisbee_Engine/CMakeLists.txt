@@ -3,11 +3,10 @@ file(GLOB sources _source/*.cpp _source/physics/*.cpp)
 add_executable(Frisbee_Engine ${sources})
 target_include_directories(Frisbee_Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/_include)
 
-# Internal Projects Linking )
-target_link_libraries(Frisbee_Engine PRIVATE Renderer Pins)
 
-# GLM
-target_include_directories(Renderer PUBLIC ${CMAKE_SOURCE_DIR}/Projects/_include/glm)
+target_include_directories(Renderer PUBLIC ${CMAKE_SOURCE_DIR}/Projects/_include/spdlog)
+
+target_link_libraries(Frisbee_Engine PRIVATE Renderer Pins)
 
 # SHADERS
 file(GLOB_RECURSE SHADER_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.vert" "${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.frag")

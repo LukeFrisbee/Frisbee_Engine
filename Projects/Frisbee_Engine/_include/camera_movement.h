@@ -3,11 +3,15 @@
 #include "script.h"
 #include "render_object.h"
 
+#include "input.h"
+#include "screen.h"
+#include "camera.h"
+
 namespace fengine {
 	class CameraMovement : public Script {
 	public:
-		using Script::Script;
-
+		CameraMovement(Camera& camera, Input& input, Screen& screen)
+			: m_camera(camera), m_input(input), m_screen(screen) {};
 		void Update() override;
 		void Start() override;
 
@@ -39,5 +43,8 @@ namespace fengine {
 		bool m_isLocked{ false };
 
 		TransformComponent m_transform;
+		Input& m_input;
+		Screen& m_screen;
+		Camera& m_camera;
 	};
 }

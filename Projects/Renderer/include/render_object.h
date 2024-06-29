@@ -23,11 +23,10 @@ namespace fengine {
     class RenderObject {
     public:
         RenderObject() = default;
-        std::shared_ptr<Model> model{};
-        int shaderId{};
         TransformComponent transform{};
+        int modelId{};
+        int shaderId{};
         std::vector<UBO*> uniforms = std::vector<UBO*>(0);
-
 
     public:
         RenderObject(const RenderObject&) = delete;

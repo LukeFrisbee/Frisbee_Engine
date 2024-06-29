@@ -2,6 +2,7 @@
 
 #include <string>
 #include "glm/glm.hpp"
+#include <queue>
 
 /*
 TODO:
@@ -14,6 +15,8 @@ namespace fengine {
 	public:
 		// DATA
 		int fps{};
+		std::queue<int> fpsQueue;
+
 		std::string swapPresetMode{};
 		bool isWireFrame = false;
 		glm::vec3 camPos{};
@@ -38,6 +41,8 @@ namespace fengine {
 			static GlobalData instance;
 			return instance;
 		}
+
+
 
 		GlobalData(const GlobalData&) = delete;
 		GlobalData(GlobalData&&) = delete;

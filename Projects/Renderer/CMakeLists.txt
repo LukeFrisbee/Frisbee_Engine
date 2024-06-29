@@ -31,11 +31,18 @@ add_library("imgui" STATIC ${IMGUI_SOURCES})
 target_include_directories("imgui" PUBLIC ${IMGUI_INCLUDE_DIR})
 target_link_libraries("imgui" PRIVATE ${LIBRARIES})
 
+# ImGuizmo
+set(IMGUIZMO_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/imguizmo)
+file(GLOB IMGUIZMO_SOURCES ${IMGUIZMO_INCLUDE_DIR}/*.cpp ${IMGUIZMO_INCLUDE_DIR}/*.h) 
+add_library("imguizmo" STATIC ${IMGUIZMO_SOURCES})
+target_include_directories("imguizmo" PUBLIC ${IMGUIZMO_INCLUDE_DIR})
+target_link_libraries("imguizmo" PRIVATE imgui)
+
 #VMA
 target_include_directories(Renderer PUBLIC "vendor/vma")
 
 # Link libraries
-target_link_libraries(Renderer PUBLIC imgui ${LIBRARIES})
+target_link_libraries(Renderer PUBLIC imgui imguizmo ${LIBRARIES})
 
 # Set C++ standard
 if (CMAKE_VERSION VERSION_GREATER 3.12)

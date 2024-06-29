@@ -1,17 +1,23 @@
 #include "f_imgui_draw.h"
 
-#include <stdexcept>
 #include <string>
 #include <filesystem>
+#include <cassert>
+#include "glm/gtx/string_cast.hpp"
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
 
-#include "glm/gtx/string_cast.hpp"
+#include "ImGuizmo.h"
 
 namespace fengine {
-	FImguiDraw::FImguiDraw(FWindow& window, Device& device, uint32_t imageCount, VkRenderPass renderPass)
+	EditorUI::EditorUI(FWindow& window, Device& device, size_t imageCount, VkRenderPass renderPass, Camera& camera, RendererResources& rendererResources)
+		: m_camera{ camera }, m_rendererResources {
+		rendererResources
+	}
 	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -20,7 +26,7 @@ namespace fengine {
 		// Config
 		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-		//io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
 		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
 		//io.ConfigViewportsNoAutoMerge = true;
 		//io.ConfigViewportsNoTaskBarIcon = true;
@@ -34,8 +40,8 @@ namespace fengine {
 		init_info.PipelineCache = VK_NULL_HANDLE;
 		init_info.DescriptorPool = device.descriptorPool();
 		init_info.Subpass = 0;
-		init_info.MinImageCount = imageCount;
-		init_info.ImageCount = imageCount;
+		init_info.MinImageCount = static_cast<uint32_t>(imageCount);
+		init_info.ImageCount = static_cast<uint32_t>(imageCount);
 		init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 		init_info.Allocator = nullptr;
 		init_info.CheckVkResultFn = nullptr;
@@ -45,48 +51,79 @@ namespace fengine {
 		initImguiStyle();
 	}
 
-	FImguiDraw::~FImguiDraw()
+	EditorUI::~EditorUI()
 	{
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
 	}
 
-	void FImguiDraw::DrawFrame()
-	{
-		ImGui_ImplVulkan_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGuiIO& io = ImGui::GetIO();
-		auto& globalData = GlobalData::getInstance();
+	void EditorUI::LogWindow() {
+		ImGui::Begin("Log");
 
-		ImGui::NewFrame();
+		ImGui::TextWrapped(logString.c_str());
 
-		SettingsWindow(io, globalData);
-		//ImGui::ShowDemoWindow();
-
-		ImGui::Render();
+		ImGui::End();
 	}
 
-	void FImguiDraw::RenderDrawData(VkCommandBuffer commandBuffer)
+	void EditorUI::Gizmos() 
 	{
-		auto drawData = ImGui::GetDrawData();
+		static ImGuizmo::OPERATION s_gizmoOperation(ImGuizmo::TRANSLATE);
+		static ImGuizmo::MODE s_gizmoMode(ImGuizmo::WORLD);
 
-		if (drawData == nullptr)
-		{
-			throw std::runtime_error("Trying to Render Imgui draw data when no draw data exists!");
-			return;
+		if (ImGui::IsKeyPressed(ImGuiKey_1))
+			s_gizmoOperation = ImGuizmo::TRANSLATE;
+		if (ImGui::IsKeyPressed(ImGuiKey_2))
+			s_gizmoOperation = ImGuizmo::ROTATE;
+		if (ImGui::IsKeyPressed(ImGuiKey_3)) 
+			s_gizmoOperation = ImGuizmo::SCALE;
+
+		if (ImGui::IsKeyPressed(ImGuiKey_4) ) {
+			if (s_gizmoMode == ImGuizmo::WORLD)
+				s_gizmoMode = ImGuizmo::LOCAL;
+			else
+				s_gizmoMode = ImGuizmo::WORLD;
 		}
 
-		ImGui_ImplVulkan_RenderDrawData(drawData, commandBuffer);
-	}
+		ImGuizmo::BeginFrame();
+		// Invert projection Y
+		auto projection = m_camera.getProjection();
+		projection[1][1] *= -1.0f;
+		RenderObject& object = m_rendererResources.getRenderObject(selectedRenderId);
+		glm::mat4 modelMatrix = object.transform.modelMatrix();
 
-	void FImguiDraw::SettingsWindow(ImGuiIO& io, GlobalData& globalData)
+		if (ImGuizmo::Manipulate(glm::value_ptr(m_camera.getView()), glm::value_ptr(projection),
+			s_gizmoOperation, s_gizmoMode, glm::value_ptr(modelMatrix)))
+		{
+			glm::vec3 scale;
+			glm::quat rotation;
+			glm::vec3 translation;
+			glm::vec3 skew;
+			glm::vec4 perspective;
+			glm::decompose(modelMatrix, scale, rotation, translation, skew, perspective);
+			glm::vec3 eulerAngles = glm::eulerAngles(rotation);
+
+			switch (s_gizmoOperation) {
+			case ImGuizmo::TRANSLATE:
+				object.transform.translation = translation;
+				break;
+			case ImGuizmo::ROTATE:
+				object.transform.rotation = eulerAngles;
+				break;
+			case ImGuizmo::SCALE:
+				object.transform.scale = scale;
+				break;
+			}
+		}
+		// Display the gizmo
+		ImGuizmo::SetRect(0, 0, ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y);
+	}
+	
+	void EditorUI::SettingsWindow()
 	{
 		ImGui::Begin("Settings");
-		ImGui::SetWindowPos({ 10, 10 }, ImGuiCond_Once);
-		auto width = io.DisplaySize.x / 3.8f;
-		auto height = io.DisplaySize.y / 1.5f;
-		ImGui::SetWindowSize({ width, height }, ImGuiCond_Once);
+		auto& globalData = GlobalData::getInstance();
+		auto io = ImGui::GetIO();
 
 		// Debug
 		if (ImGui::CollapsingHeader("Debug", ImGuiTreeNodeFlags_DefaultOpen))
@@ -151,7 +188,107 @@ namespace fengine {
 		ImGui::End();
 	}
 
-	void FImguiDraw::initImguiStyle()
+	void EditorUI::ObjectsWindow() 
+	{
+		ImGui::Begin("Objects");
+
+		for (auto id : m_rendererResources.getIdsCopy()) {
+			// Calculate the size of the text
+			ImVec2 textSize = ImGui::CalcTextSize(renderIDToName[id].c_str());
+			ImVec2 cursorPos = ImGui::GetCursorScreenPos();
+
+			// Define the clickable rectangle dimensions
+			ImVec2 min = cursorPos;
+			ImVec2 max = ImVec2(min.x + ImGui::GetWindowContentRegionMax().x, min.y + textSize.y);
+			ImVec2 size = ImVec2(max.x - min.x, max.y - min.y);
+
+			// Add an invisible button to handle clicks
+			ImGui::SetCursorScreenPos(min);
+			if (ImGui::InvisibleButton(std::to_string(id).c_str(), size)) {
+				selectedRenderId = id;
+			}
+
+			// Highlight the rectangle if it is the selected item
+			if (id == selectedRenderId) {
+				ImGui::GetWindowDrawList()->AddRectFilled(min, max, IM_COL32(10, 50, 10, 255));
+			}
+
+			// Render the text
+			ImGui::SetCursorScreenPos(cursorPos); // Reset the cursor position to render text
+			ImGui::Text(renderIDToName[id].c_str());
+		}
+
+		ImGui::End();
+	}
+
+	void EditorUI::InspectorWindow() 
+	{
+		ImGui::Begin("Inspector");
+
+		auto& object = m_rendererResources.getRenderObject(selectedRenderId);
+
+		ImGui::Text(renderIDToName[selectedRenderId].c_str());
+
+		ImGui::PushItemWidth(-1);
+		ImGui::InputFloat3("T", glm::value_ptr(object.transform.translation));
+		ImGui::PopItemWidth();
+
+		ImGui::PushItemWidth(-1);
+		ImGui::InputFloat3("R", glm::value_ptr(object.transform.rotation));
+		ImGui::PopItemWidth();
+
+		ImGui::PushItemWidth(-1);
+		ImGui::InputFloat3("S", glm::value_ptr(object.transform.scale));
+		ImGui::PopItemWidth();
+
+		ImGui::End();
+	}
+
+	void EditorUI::BarWindow() {
+		ImGui::Begin("Bar", NULL, ImGuiWindowFlags_NoTitleBar);
+
+		auto& global = GlobalData::getInstance();
+
+		std::vector<float> vec;
+		std::queue<int> temp = global.fpsQueue;
+		while (!temp.empty()) {
+			vec.push_back(temp.front());
+			temp.pop();
+		}
+		ImGui::SetNextItemWidth(100);
+		ImGui::PlotLines("##Frame Times", vec.data(), static_cast<int>(vec.size()));
+
+		ImGui::SameLine();
+		auto fpsText = "fps: " + std::to_string(global.fps);
+		ImGui::Text(fpsText.c_str());
+
+		ImGui::End();
+	}
+
+	void EditorUI::DrawFrame(VkCommandBuffer commandBuffer)
+	{
+		ImGui_ImplVulkan_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+
+		LogWindow();
+		SettingsWindow();
+		ObjectsWindow();
+		InspectorWindow();
+		BarWindow();
+		Gizmos();
+
+		//ImGui::ShowDemoWindow();
+
+		ImGui::Render();
+
+		auto drawData = ImGui::GetDrawData();
+		assert(drawData != nullptr && "Trying to Render Imgui draw data when no draw data exists!");
+		ImGui_ImplVulkan_RenderDrawData(drawData, commandBuffer);
+	}
+
+	void EditorUI::initImguiStyle()
 	{
 		ImGuiIO& io = ImGui::GetIO();
 
@@ -204,10 +341,10 @@ namespace fengine {
 			colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
 			colors[ImGuiCol_DockingPreview] = ImVec4(0.33f, 0.67f, 0.86f, 1.00f);
 			colors[ImGuiCol_DockingEmptyBg] = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
-			colors[ImGuiCol_PlotLines] = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
-			colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
-			colors[ImGuiCol_PlotHistogram] = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
-			colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
+			colors[ImGuiCol_PlotLines] = ImVec4(0.00f, 0.40f, 0.00f, 1.00f);
+			colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.00f, 0.40f, 0.00f, 1.00f);
+			colors[ImGuiCol_PlotHistogram] = ImVec4(0.00f, 0.40f, 0.00f, 1.00f);
+			colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.00f, 0.40f, 0.00f, 1.00f);
 			colors[ImGuiCol_TableHeaderBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
 			colors[ImGuiCol_TableBorderStrong] = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
 			colors[ImGuiCol_TableBorderLight] = ImVec4(0.28f, 0.28f, 0.28f, 0.29f);
