@@ -20,24 +20,23 @@
 
 #include "logger.h"
 
+#include "test_script.h"
+
 namespace fengine {
 	App::App() {
 		//TestScript script{};
 
 		Logger::Init(m_editorUI);
-		LOG_WARN("test!");
 
 		m_scripts.push_back(std::make_unique<CameraMovement>(m_camera, m_input, m_screen));
-		//m_scripts.push_back(std::make_unique<RopeConnector>(m_camera, m_input, m_screen, m_modelBuilder, m_rendererResources));
+		m_scripts.push_back(std::make_unique<TestScript>(m_ecs));
+		m_scripts.push_back(std::make_unique<RopeConnector>(m_ecs, m_camera, m_input, m_screen, m_rendererResources));
 	}
 
 	void App::run()
 	{
 		auto& globalData = GlobalData::getInstance();
 		globalData.fps = 0;
-
-		m_camera.setPosition(glm::vec3(-5.0f, -1.0f, 0.0f));
-		//m_camera.setViewDirection(glm::vec3{}, glm::vec3(0.0f, 0.0f, 0.5f));
 
 		for (auto& script : m_scripts) {
 			script->Start();
@@ -49,10 +48,10 @@ namespace fengine {
 			for (auto& script : m_scripts) {
 				script->Update();
 			}
-			_time();
-			
+
 			_renderLoop();
 
+			_time();
 		}
 
 		// Stops errors from being thrown if GPU is still processing command buffers
@@ -73,7 +72,6 @@ namespace fengine {
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		float frameTime = std::chrono::duration<float, std::chrono::seconds::period>
 			(currentTime - lastFrameTime).count();
-
 		LoopTime::setDeltaTime(frameTime);
 
 		// FpsCounter
@@ -84,7 +82,7 @@ namespace fengine {
 			if (globalData.fpsQueue.size() > 10)
 				globalData.fpsQueue.pop();
 
-			LOG_DEBUG(fpsCounter);
+			//LOG_DEBUG(fpsCounter);
 			globalData.fps = fpsCounter;
 			fpsCounter = 0;
 			lastSecondTimePoint = currentTime;

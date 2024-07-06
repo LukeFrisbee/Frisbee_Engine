@@ -26,10 +26,16 @@ namespace std {
 
 namespace fengine {
 
-	Model::Model(Device& fDevice, const Model::Data& data) : m_device{ fDevice }
+	Model::Model(Device& fDevice, const std::vector<Vertex> vertices) : m_device{ fDevice }
 	{
-		createVertexBuffers(data.vertices);
-		createIndexBuffers(data.indices);
+		createVertexBuffers(vertices);
+		hasIndexBuffer = false;
+	}
+
+	Model::Model(Device& fDevice, const std::vector<Vertex> vertices, const std::vector<uint32_t> indices) : m_device{ fDevice }
+	{
+		createVertexBuffers(vertices);
+		createIndexBuffers(indices);
 	}
 
 	Model::Model(Device& fDevice, const std::string& filePath) : m_device{ fDevice }
@@ -44,9 +50,8 @@ namespace fengine {
 			throw std::runtime_error(warn + error);
 		}
 
-		Model::Data data{};
-		data.vertices.clear();
-		data.indices.clear();
+		std::vector<Vertex> vertices;
+		std::vector<uint32_t> indices;
 
 		std::unordered_map<Model::Vertex, uint32_t> uniqueVertices{};
 
@@ -81,16 +86,16 @@ namespace fengine {
 				}
 
 				if (uniqueVertices.count(vertex) == 0) {
-					uniqueVertices[vertex] = static_cast<uint32_t>(data.vertices.size());
-					data.vertices.push_back(vertex);
+					uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+					vertices.push_back(vertex);
 				}
-				data.indices.push_back(uniqueVertices[vertex]);
+				indices.push_back(uniqueVertices[vertex]);
 			}
 		}
 			
 
-		createVertexBuffers(data.vertices);
-		createIndexBuffers(data.indices);
+		createVertexBuffers(vertices);
+		createIndexBuffers(indices);
 	}
 
 	Model::~Model()

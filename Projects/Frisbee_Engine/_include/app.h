@@ -14,8 +14,8 @@
 #include "camera.h"
 
 #include "render_object_holder.h"
-#include "model_builder.h"
 #include "ResourceLoader.h"
+#include "entt/entt.hpp"
 
 namespace fengine { 
 	class App {
@@ -34,23 +34,26 @@ namespace fengine {
 		void _renderLoop();
 		void _time();
 
+		// Vulkan Setup
 		FWindow m_window { WIDTH, HEIGHT, "Frisbee Engine" };
 		Device m_device{ m_window };
+
+		// Renderer Setup
 		Renderer m_renderer{ m_window, m_device };
-
 		RendererResources m_rendererResources{ m_device, m_renderer.getRenderPass() };
-		ModelBuilder m_modelBuilder{ m_device };
-
 		RenderSystem m_renderSystem{ m_device, m_rendererResources };
-		EditorUI m_editorUI{ m_window, m_device, m_renderer.getImageCount(), m_renderer.getRenderPass(), m_camera, m_rendererResources };
-		ResourceLoader m_resourceLoader{ m_rendererResources, m_modelBuilder, m_editorUI };
+		Camera m_camera{};
 
+		// Editor
+		entt::registry m_ecs;
+		EditorUI m_editorUI{ m_window, m_device, m_renderer.getImageCount(), m_renderer.getRenderPass(), m_camera, m_rendererResources, m_ecs };
+		
+		// Asset Loading
+		ResourceLoader m_resourceLoader{ m_rendererResources };
+		
 		// Script Helpers
 		Input m_input{ m_window };
 		Screen m_screen{ m_window };
-		Camera m_camera{};
-
-
 		std::vector<std::unique_ptr<Script>> m_scripts;
 	};
 }

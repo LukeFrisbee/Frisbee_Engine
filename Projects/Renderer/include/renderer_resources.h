@@ -17,11 +17,12 @@ namespace fengine {
             const Shader::Settings& settings,
             const std::vector<size_t>& uboSizes);
 
-        int createModel(const Model::Data& data);
+        int createModel(const std::vector<Model::Vertex> vertices);
+        int createModel(const std::vector<Model::Vertex> vertices, std::vector<uint32_t> indicies);
         int createModel(const std::string& filePath);
 
         // TODO: allow for index buffers to be updated aswell (only uses data.vertices)
-        void updateModel(uint32_t modelId, const Model::Data& data);
+        void updateModel(uint32_t modelId, const std::vector<Model::Vertex> vertices);
 
         uint32_t addRenderObject(RenderObject renderObject);
         RenderObject& getRenderObject(uint32_t id);

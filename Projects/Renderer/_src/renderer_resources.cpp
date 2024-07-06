@@ -21,8 +21,13 @@ namespace fengine {
         return shaderId++;
     }
 
-    int RendererResources::createModel(const Model::Data& data) {
-        m_models.push_back(std::make_unique<Model>(m_device, data));
+    int RendererResources::createModel(const std::vector<Model::Vertex> vertices) {
+        m_models.push_back(std::make_unique<Model>(m_device, vertices));
+        return m_models.size() - 1;
+    }
+
+    int RendererResources::createModel(const std::vector<Model::Vertex> vertices, const std::vector<uint32_t> indicies) {
+        m_models.push_back(std::make_unique<Model>(m_device, vertices, indicies));
 
         return m_models.size() - 1;
     }
@@ -33,10 +38,10 @@ namespace fengine {
         return m_models.size() - 1;
     }
 
-    void RendererResources::updateModel(uint32_t modelId, const Model::Data& data) {
-        assert(modelId > 0 && modelId < m_models.size() && "RendererResources: Cannot updateModel out of bounds!");
+    void RendererResources::updateModel(uint32_t modelId, const std::vector<Model::Vertex> vertices) {
+        assert(modelId >= 0 && modelId < m_models.size() && "RendererResources: Cannot updateModel out of bounds!");
 
-        m_models[modelId]->updateVertexBuffers(data.vertices);
+        m_models[modelId]->updateVertexBuffers(vertices);
     }
 
     uint32_t RendererResources::addRenderObject(RenderObject renderObject) {

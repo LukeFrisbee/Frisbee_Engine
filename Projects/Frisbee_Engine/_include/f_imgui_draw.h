@@ -13,10 +13,12 @@
 #include "renderer_resources.h"
 #include "camera.h"
 
+#include "entt/entt.hpp"
+
 namespace fengine {
 	class EditorUI {
 		public:
-			EditorUI(FWindow& window, Device& device, size_t imageCount, VkRenderPass renderPass, Camera& camera, RendererResources& rendererResources);
+			EditorUI(FWindow& window, Device& device, size_t imageCount, VkRenderPass renderPass, Camera& camera, RendererResources& rendererResources, entt::registry& ecs);
 			~EditorUI();
 
 			void DrawFrame(VkCommandBuffer commandBuffer);
@@ -41,9 +43,12 @@ namespace fengine {
 			RendererResources& m_rendererResources;
 			Camera& m_camera;
 
+			entt::registry& m_ecs;
+			entt::entity m_selectedEntity = entt::null;
+
 			void LogWindow();
 			void SettingsWindow();
-			void ObjectsWindow();
+			void EntitiesWindow();
 			void InspectorWindow();
 			void BarWindow();
 			void Gizmos();

@@ -6,8 +6,8 @@
 #include <fstream>
 
 namespace fengine {
-	ResourceLoader::ResourceLoader(RendererResources& rendererResources, ModelBuilder& modelBuilder, EditorUI& editorUI)
-		: m_rendererResources{ rendererResources }, m_modelBuilder { modelBuilder }
+	ResourceLoader::ResourceLoader(RendererResources& rendererResources)
+		: m_rendererResources{ rendererResources }
 	{
 		std::ofstream ofile("resourceloader.txt");
 		if (ofile.is_open()) {
@@ -28,17 +28,16 @@ namespace fengine {
 			"shaders/albedo.vert.spv", "shaders/albedo.frag.spv",
 			shaderSettings, albedoSizes);
 
-		Model::Data data{};
-		data.vertices =
-		{
-			{ { 0.0, 1.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
-			{ { 1.0, 1.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
-			{ { 0.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
-			{ { 1.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
-			{ { 0.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
-			{ { 0.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} }
-		};
-		m_rendererResources.createModel(data);
+		//std::vector<Model::Vertex> vertices =
+		//{
+		//	{ { 0.0, 1.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
+		//	{ { 1.0, 1.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
+		//	{ { 0.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
+		//	{ { 1.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
+		//	{ { 0.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
+		//	{ { 0.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} }
+		//};
+		//m_rendererResources.createModel(vertices);
 		int jeepId = m_rendererResources.createModel(modelFolder + "jeep.obj");
 		int cubeId = m_rendererResources.createModel(modelFolder + "cube.obj");
 		int sphereId = m_rendererResources.createModel(modelFolder + "sphere.obj");
@@ -57,13 +56,11 @@ namespace fengine {
 			jeep.uniforms.push_back(pbr);
 
 			auto id = m_rendererResources.addRenderObject(std::move(jeep));
-			editorUI.LinkRenderObject(id, "Jeep");
 		}
 
 		// LIGHT CUBE
 		{
 			auto cube = RenderObject();
-			std::shared_ptr<Model> model = m_modelBuilder.BuildModelFromFile(modelFolder + "cube.obj");
 			cube.modelId = cubeId;
 			//Shader::Settings shaderSettings{};
 			cube.shaderId = albedoShaderID;
@@ -72,13 +69,11 @@ namespace fengine {
 			cube.transform.scale = { 0.25f, 0.25f, 0.25f };
 
 			auto id = m_rendererResources.addRenderObject(std::move(cube));
-			editorUI.LinkRenderObject(id, "Cube");
 		}
 
 		// PBR CUBE
 		{
 			auto cube = RenderObject();
-			std::shared_ptr<Model> model = m_modelBuilder.BuildModelFromFile(modelFolder + "cube.obj");
 			cube.modelId = cubeId;
 			//Shader::Settings shaderSettings{};
 			cube.shaderId = pbrShaderID;
@@ -91,7 +86,6 @@ namespace fengine {
 			cube.uniforms.push_back(pbr);
 
 			auto id = m_rendererResources.addRenderObject(std::move(cube));
-			editorUI.LinkRenderObject(id, "Cube");
 		}
 
 
@@ -110,7 +104,6 @@ namespace fengine {
 			sphere.uniforms.push_back(pbr);
 
 			auto id = m_rendererResources.addRenderObject(std::move(sphere));
-			editorUI.LinkRenderObject(id, "Sphere");
 		}
 
 		// BOARD
@@ -129,7 +122,6 @@ namespace fengine {
 			gameObject.uniforms.push_back(pbr);
 
 			auto id = m_rendererResources.addRenderObject(std::move(gameObject));
-			editorUI.LinkRenderObject(id, "Board1");
 		}
 		{
 			auto gameObject = RenderObject();
@@ -146,7 +138,6 @@ namespace fengine {
 			gameObject.uniforms.push_back(pbr);
 
 			auto id = m_rendererResources.addRenderObject(std::move(gameObject));
-			editorUI.LinkRenderObject(id, "Board2");
 		}
 	}
 }

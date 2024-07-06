@@ -3,9 +3,14 @@
 #include <string>
 #include <filesystem>
 #include <cassert>
+
+#include "glm/glm.hpp"
 #include "glm/gtx/string_cast.hpp"
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -13,11 +18,11 @@
 
 #include "ImGuizmo.h"
 
+#include "components/transform.h"
+
 namespace fengine {
-	EditorUI::EditorUI(FWindow& window, Device& device, size_t imageCount, VkRenderPass renderPass, Camera& camera, RendererResources& rendererResources)
-		: m_camera{ camera }, m_rendererResources {
-		rendererResources
-	}
+	EditorUI::EditorUI(FWindow& window, Device& device, size_t imageCount, VkRenderPass renderPass, Camera& camera, RendererResources& rendererResources, entt::registry& ecs)
+		: m_camera{ camera }, m_rendererResources { rendererResources }, m_ecs { ecs }
 	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -62,6 +67,7 @@ namespace fengine {
 		ImGui::Begin("Log");
 
 		ImGui::TextWrapped(logString.c_str());
+		logString = "";
 
 		ImGui::End();
 	}
@@ -86,37 +92,70 @@ namespace fengine {
 		}
 
 		ImGuizmo::BeginFrame();
-		// Invert projection Y
+
 		auto projection = m_camera.getProjection();
 		projection[1][1] *= -1.0f;
-		RenderObject& object = m_rendererResources.getRenderObject(selectedRenderId);
-		glm::mat4 modelMatrix = object.transform.modelMatrix();
 
-		if (ImGuizmo::Manipulate(glm::value_ptr(m_camera.getView()), glm::value_ptr(projection),
-			s_gizmoOperation, s_gizmoMode, glm::value_ptr(modelMatrix)))
-		{
-			glm::vec3 scale;
-			glm::quat rotation;
-			glm::vec3 translation;
-			glm::vec3 skew;
-			glm::vec4 perspective;
-			glm::decompose(modelMatrix, scale, rotation, translation, skew, perspective);
-			glm::vec3 eulerAngles = glm::eulerAngles(rotation);
+		auto* transform = m_ecs.try_get<Transform>(m_selectedEntity);
+		if (transform != nullptr) {
+			glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), transform->translation);
+			glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), transform->scale);
+			glm::mat4 rotationMatrix = glm::toMat4(glm::quat(transform->rotation));
+			glm::mat4 matrix = translationMatrix * rotationMatrix * scaleMatrix;
 
-			switch (s_gizmoOperation) {
-			case ImGuizmo::TRANSLATE:
-				object.transform.translation = translation;
-				break;
-			case ImGuizmo::ROTATE:
-				object.transform.rotation = eulerAngles;
-				break;
-			case ImGuizmo::SCALE:
-				object.transform.scale = scale;
-				break;
+			//glm::mat4 matrix{ 1.0f };
+
+			if (ImGuizmo::Manipulate(glm::value_ptr(m_camera.getView()), glm::value_ptr(projection),
+				s_gizmoOperation, s_gizmoMode, glm::value_ptr(matrix)))
+			{
+				glm::vec3 skew;
+				glm::vec4 perspective;
+				glm::quat orientation;
+				glm::decompose(matrix, transform->scale, orientation, transform->translation, skew, perspective);
+				transform->rotation = glm::degrees(glm::eulerAngles(orientation));
+
+				auto* mesh = m_ecs.try_get<RenderId>(m_selectedEntity);
+				if (mesh != nullptr) {
+					auto& render = m_rendererResources.getRenderObject(mesh->id);
+					render.transform.translation = transform->translation;
+					render.transform.rotation = transform->rotation;
+					render.transform.scale = transform->scale;
+				}
 			}
 		}
-		// Display the gizmo
+
 		ImGuizmo::SetRect(0, 0, ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y);
+
+		// Invert projection Y
+		//auto projection = m_camera.getProjection();
+		//projection[1][1] *= -1.0f;
+		//RenderObject& object = m_rendererResources.getRenderObject(selectedRenderId);
+		//glm::mat4 modelMatrix = object.transform.modelMatrix();
+		//
+		//if (ImGuizmo::Manipulate(glm::value_ptr(m_camera.getView()), glm::value_ptr(projection),
+		//	s_gizmoOperation, s_gizmoMode, glm::value_ptr(modelMatrix)))
+		//{
+		//	glm::vec3 scale;
+		//	glm::quat rotation;
+		//	glm::vec3 translation;
+		//	glm::vec3 skew;
+		//	glm::vec4 perspective;
+		//	glm::decompose(modelMatrix, scale, rotation, translation, skew, perspective);
+		//	glm::vec3 eulerAngles = glm::eulerAngles(rotation);
+		//
+		//	switch (s_gizmoOperation) {
+		//	case ImGuizmo::TRANSLATE:
+		//		object.transform.translation = translation;
+		//		break;
+		//	case ImGuizmo::ROTATE:
+		//		object.transform.rotation = eulerAngles;
+		//		break;
+		//	case ImGuizmo::SCALE:
+		//		object.transform.scale = scale;
+		//		break;
+		//	}
+		//}
+		//// Display the gizmo
 	}
 	
 	void EditorUI::SettingsWindow()
@@ -188,35 +227,66 @@ namespace fengine {
 		ImGui::End();
 	}
 
-	void EditorUI::ObjectsWindow() 
+	void EditorUI::EntitiesWindow() 
 	{
-		ImGui::Begin("Objects");
+		ImGui::Begin("Entities");
 
-		for (auto id : m_rendererResources.getIdsCopy()) {
+		auto view = m_ecs.view<Name>();
+
+		for (auto entity : view) {
+			auto& name = view.get<Name>(entity);
+			auto nameText = name.name.c_str();
+
 			// Calculate the size of the text
-			ImVec2 textSize = ImGui::CalcTextSize(renderIDToName[id].c_str());
+			ImVec2 textSize = ImGui::CalcTextSize(nameText);
 			ImVec2 cursorPos = ImGui::GetCursorScreenPos();
-
+		
 			// Define the clickable rectangle dimensions
 			ImVec2 min = cursorPos;
 			ImVec2 max = ImVec2(min.x + ImGui::GetWindowContentRegionMax().x, min.y + textSize.y);
 			ImVec2 size = ImVec2(max.x - min.x, max.y - min.y);
-
+		
 			// Add an invisible button to handle clicks
 			ImGui::SetCursorScreenPos(min);
-			if (ImGui::InvisibleButton(std::to_string(id).c_str(), size)) {
-				selectedRenderId = id;
+			if (ImGui::InvisibleButton(nameText, size)) {
+				m_selectedEntity = entity;
 			}
-
+		
 			// Highlight the rectangle if it is the selected item
-			if (id == selectedRenderId) {
+			if (m_selectedEntity == entity) {
 				ImGui::GetWindowDrawList()->AddRectFilled(min, max, IM_COL32(10, 50, 10, 255));
 			}
-
+		
 			// Render the text
 			ImGui::SetCursorScreenPos(cursorPos); // Reset the cursor position to render text
-			ImGui::Text(renderIDToName[id].c_str());
+			ImGui::Text(nameText);
 		}
+
+		//for (auto id : m_rendererResources.getIdsCopy()) {
+		//	// Calculate the size of the text
+		//	ImVec2 textSize = ImGui::CalcTextSize(renderIDToName[id].c_str());
+		//	ImVec2 cursorPos = ImGui::GetCursorScreenPos();
+		//
+		//	// Define the clickable rectangle dimensions
+		//	ImVec2 min = cursorPos;
+		//	ImVec2 max = ImVec2(min.x + ImGui::GetWindowContentRegionMax().x, min.y + textSize.y);
+		//	ImVec2 size = ImVec2(max.x - min.x, max.y - min.y);
+		//
+		//	// Add an invisible button to handle clicks
+		//	ImGui::SetCursorScreenPos(min);
+		//	if (ImGui::InvisibleButton(std::to_string(id).c_str(), size)) {
+		//		selectedRenderId = id;
+		//	}
+		//
+		//	// Highlight the rectangle if it is the selected item
+		//	if (id == selectedRenderId) {
+		//		ImGui::GetWindowDrawList()->AddRectFilled(min, max, IM_COL32(10, 50, 10, 255));
+		//	}
+		//
+		//	// Render the text
+		//	ImGui::SetCursorScreenPos(cursorPos); // Reset the cursor position to render text
+		//	ImGui::Text(renderIDToName[id].c_str());
+		//}
 
 		ImGui::End();
 	}
@@ -225,21 +295,51 @@ namespace fengine {
 	{
 		ImGui::Begin("Inspector");
 
-		auto& object = m_rendererResources.getRenderObject(selectedRenderId);
+		if (m_selectedEntity != entt::null) {
+			auto* name = m_ecs.try_get<Name>(m_selectedEntity);
+			if (name != nullptr) {
+				ImGui::Text(name->name.c_str());
+			}
 
-		ImGui::Text(renderIDToName[selectedRenderId].c_str());
+			auto* transform = m_ecs.try_get<Transform>(m_selectedEntity);
+			if (transform != nullptr) {
+				ImGui::PushItemWidth(-1);
+				ImGui::InputFloat3("T", glm::value_ptr(transform->translation));
+				ImGui::PopItemWidth();
 
-		ImGui::PushItemWidth(-1);
-		ImGui::InputFloat3("T", glm::value_ptr(object.transform.translation));
-		ImGui::PopItemWidth();
+				ImGui::PushItemWidth(-1);
+				ImGui::InputFloat3("R", glm::value_ptr(transform->rotation));
+				ImGui::PopItemWidth();
 
-		ImGui::PushItemWidth(-1);
-		ImGui::InputFloat3("R", glm::value_ptr(object.transform.rotation));
-		ImGui::PopItemWidth();
+				ImGui::PushItemWidth(-1);
+				ImGui::InputFloat3("S", glm::value_ptr(transform->scale));
+				ImGui::PopItemWidth();
 
-		ImGui::PushItemWidth(-1);
-		ImGui::InputFloat3("S", glm::value_ptr(object.transform.scale));
-		ImGui::PopItemWidth();
+				auto* mesh = m_ecs.try_get<RenderId>(m_selectedEntity);
+				if (mesh != nullptr) {
+					auto& render = m_rendererResources.getRenderObject(mesh->id);
+					render.transform.translation = transform->translation;
+					render.transform.rotation = transform->rotation;
+					render.transform.scale = transform->scale;
+				}
+			}
+		}
+
+		//auto& object = m_rendererResources.getRenderObject(selectedRenderId);
+		//
+		//ImGui::Text(renderIDToName[selectedRenderId].c_str());
+		//
+		//ImGui::PushItemWidth(-1);
+		//ImGui::InputFloat3("T", glm::value_ptr(object.transform.translation));
+		//ImGui::PopItemWidth();
+		//
+		//ImGui::PushItemWidth(-1);
+		//ImGui::InputFloat3("R", glm::value_ptr(object.transform.rotation));
+		//ImGui::PopItemWidth();
+		//
+		//ImGui::PushItemWidth(-1);
+		//ImGui::InputFloat3("S", glm::value_ptr(object.transform.scale));
+		//ImGui::PopItemWidth();
 
 		ImGui::End();
 	}
@@ -274,7 +374,7 @@ namespace fengine {
 
 		LogWindow();
 		SettingsWindow();
-		ObjectsWindow();
+		EntitiesWindow();
 		InspectorWindow();
 		BarWindow();
 		Gizmos();

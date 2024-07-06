@@ -1,10 +1,12 @@
 ﻿# Executable and Libraries
-file(GLOB sources _source/*.cpp _source/physics/*.cpp)
+file(GLOB sources _source/*.cpp _source/physics/*.cpp _source/components/*.cpp)
 add_executable(Frisbee_Engine ${sources})
 target_include_directories(Frisbee_Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/_include)
 
 
 target_include_directories(Renderer PUBLIC ${CMAKE_SOURCE_DIR}/Projects/_include/spdlog)
+
+target_include_directories(Renderer PUBLIC ${CMAKE_SOURCE_DIR}/Projects/_include/entt)
 
 target_link_libraries(Frisbee_Engine PRIVATE Renderer Pins)
 

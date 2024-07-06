@@ -27,36 +27,31 @@ namespace fengine {
 				}
 			};
 
-			struct Data {
-				std::vector<Vertex> vertices{};
-				std::vector<uint32_t> indices{};
-			};
+		Model(Device& fDevice, const std::vector<Vertex> vertices);
+		Model(Device& fDevice, const std::vector<Vertex> vertices, const std::vector<uint32_t> indices);
+		Model(Device& fDevice, const std::string& filePath);
+		~Model();
 
-			Model(Device& fDevice, const Model::Data& data);
-			Model(Device& fDevice, const std::string& filePath);
-			~Model();
+		Model(const Model&) = delete;
+		Model& operator= (const Model&) = delete;
 
-			Model(const Model&) = delete;
-			Model& operator= (const Model&) = delete;
+		void bind(VkCommandBuffer commandBuffer);
+		void draw(VkCommandBuffer commandBuffer);
+		void updateVertexBuffers(const std::vector<Vertex>& vertices);
 
-			void bind(VkCommandBuffer commandBuffer);
-			void draw(VkCommandBuffer commandBuffer);
-			void updateVertexBuffers(const std::vector<Vertex>& vertices);
+	private:
+		void createVertexBuffers(const std::vector<Vertex>& vertices);
+		void createIndexBuffers(const std::vector<uint32_t>& indices);
 
-		private:
-			void createVertexBuffers(const std::vector<Vertex>& vertices);
-			void createIndexBuffers(const std::vector<uint32_t>& indices);
+		Device& m_device;
 
-			Device& m_device;
+		VkBuffer m_vertexBuffer = VK_NULL_HANDLE;
+		VmaAllocation m_vertexBufferAllocation = VK_NULL_HANDLE;
+		uint32_t m_vertexCount = 0;
 
-			VkBuffer m_vertexBuffer = VK_NULL_HANDLE;
-			VmaAllocation m_vertexBufferAllocation = VK_NULL_HANDLE;
-			uint32_t m_vertexCount = 0;
-
-			VkBuffer m_indexBuffer = VK_NULL_HANDLE;
-			VmaAllocation m_indexBufferAllocation = VK_NULL_HANDLE;
-			uint32_t m_indexCount = 0;
-			bool hasIndexBuffer = false;
-
+		VkBuffer m_indexBuffer = VK_NULL_HANDLE;
+		VmaAllocation m_indexBufferAllocation = VK_NULL_HANDLE;
+		uint32_t m_indexCount = 0;
+		bool hasIndexBuffer = false;
 	};
 }

@@ -8,10 +8,44 @@
 
 #include <iostream>
 
+#include "components/transform.h"
+
+#include "logger.h"
+
 namespace fengine {
 	void RopeConnector::Start() 
 	{
-		
+		{
+			auto e = m_ecs.create();
+			m_ecs.emplace<Transform>(e);
+			m_ecs.emplace<Pin>(e, 0);
+			RenderObject render = RenderObject();
+			render.shaderId = 0;
+			render.modelId = 2;
+			auto renderId = m_rendererResources.addRenderObject(std::move(render));
+			m_ecs.emplace<RenderId>(e, renderId);
+		}
+		{
+			auto e = m_ecs.create();
+			m_ecs.emplace<Transform>(e).translation = { -5.0f, 0.0f, 0.0f };
+			m_ecs.emplace<Pin>(e, 0);
+			RenderObject render = RenderObject();
+			render.shaderId = 0;
+			render.modelId = 2;
+			auto renderId = m_rendererResources.addRenderObject(std::move(render));
+			m_ecs.emplace<RenderId>(e, renderId);
+		}
+		{
+			auto e = m_ecs.create();
+			m_ecs.emplace<Transform>(e).translation = { 0.0f, -5.0f, 0.0f };
+			m_ecs.emplace<Pin>(e, 0);
+			RenderObject render = RenderObject();
+			render.shaderId = 0;
+			render.modelId = 2;
+			auto renderId = m_rendererResources.addRenderObject(std::move(render));
+			m_rendererResources.getRenderObject(renderId).transform.translation = { 0.0f, -5.0f, 0.0f };
+			m_ecs.emplace<RenderId>(e, renderId);
+		}
 	}
 
 	void RopeConnector::Update() 
@@ -32,29 +66,35 @@ namespace fengine {
 
 		float planeZ = 0.0f;
 		float t = (planeZ - mouseWorldPos.z) / direction.z;
-		// Intersects Plane
+
 		if (t >= 0) {
 			glm::vec3 intersectionPoint = mouseWorldPos + t * direction;
-			if (!hasActiveRope && m_input.getMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-			{
-				hasActiveRope = true;
-				activeRopeID = _createRope();
-				_handleRope(activeRopeID, glm::vec3{}, intersectionPoint);
+			if (!hasActiveRope) {
+
+				if (m_input.getMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+					RayCast raycast{};
+					auto view = m_ecs.view<Transform, Pin>();
+					for (auto& entity : view) {
+						auto transform = m_ecs.get<Transform>(entity);
+						PhysicsSphere sphere{ transform.translation, 1.0f };
+						if (raycast.castLine(&sphere, camPos, rayEnd))
+						{
+							LOG_DEBUG("collision!\n");
+							hasActiveRope = true;
+							activeRopeID = _createRope();
+							_handleRope(activeRopeID, glm::vec3{}, intersectionPoint);
+							break;
+						}
+					}
+				}
 			}
-			else if (hasActiveRope && m_input.getMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
+			else if (m_input.getMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
 				m_rendererResources.removeRenderObject(activeRopeID);
 				hasActiveRope = false;
 			}
-			else if (hasActiveRope) {
+			else {
 				_handleRope(activeRopeID, glm::vec3{}, intersectionPoint);
 			}
-		}
-
-		RayCast raycast{};
-		PhysicsShape* shape = nullptr;
-		if (raycast.castLine(shape, camPos, rayEnd))
-		{
-			globalData.debugString += "found shape!\n";
 		}
 	}
 
@@ -89,13 +129,23 @@ namespace fengine {
 		};
 
 		auto& ropeRender = m_rendererResources.getRenderObject(ropeRenderID);
-		//ropeRender.model->updateVertexBuffers(vertexData);
+		m_rendererResources.updateModel(ropeRender.modelId, vertexData);
 	}
 
 	uint32_t RopeConnector::_createRope() {
 		RenderObject rope = RenderObject();
-		rope.modelId = 0; 
+
+		std::vector<Model::Vertex> vertices =
+		{
+			{ { 0.0, 1.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
+			{ { 1.0, 1.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
+			{ { 0.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
+			{ { 1.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
+			{ { 0.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} },
+			{ { 0.0, 0.0, 0.0 }, {0.0, 0.0, 0.0}, {0.0, 0.0} }
+		};
 		rope.shaderId = 1;
+		rope.modelId = m_rendererResources.createModel(vertices);
 		activeRopeID = m_rendererResources.addRenderObject(std::move(rope));
 		return activeRopeID; 
 	}
