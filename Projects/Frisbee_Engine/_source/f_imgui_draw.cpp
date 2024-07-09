@@ -98,7 +98,7 @@ namespace fengine {
 
 		auto* transform = m_ecs.try_get<Transform>(m_selectedEntity);
 		if (transform != nullptr) {
-			glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), transform->translation);
+			glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), transform->position);
 			glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), transform->scale);
 			glm::mat4 rotationMatrix = glm::toMat4(glm::quat(transform->rotation));
 			glm::mat4 matrix = translationMatrix * rotationMatrix * scaleMatrix;
@@ -111,13 +111,13 @@ namespace fengine {
 				glm::vec3 skew;
 				glm::vec4 perspective;
 				glm::quat orientation;
-				glm::decompose(matrix, transform->scale, orientation, transform->translation, skew, perspective);
+				glm::decompose(matrix, transform->scale, orientation, transform->position, skew, perspective);
 				transform->rotation = glm::degrees(glm::eulerAngles(orientation));
 
 				auto* mesh = m_ecs.try_get<RenderId>(m_selectedEntity);
 				if (mesh != nullptr) {
 					auto& render = m_rendererResources.getRenderObject(mesh->id);
-					render.transform.translation = transform->translation;
+					render.transform.translation = transform->position;
 					render.transform.rotation = transform->rotation;
 					render.transform.scale = transform->scale;
 				}
@@ -304,7 +304,7 @@ namespace fengine {
 			auto* transform = m_ecs.try_get<Transform>(m_selectedEntity);
 			if (transform != nullptr) {
 				ImGui::PushItemWidth(-1);
-				ImGui::InputFloat3("T", glm::value_ptr(transform->translation));
+				ImGui::InputFloat3("T", glm::value_ptr(transform->position));
 				ImGui::PopItemWidth();
 
 				ImGui::PushItemWidth(-1);
@@ -318,7 +318,7 @@ namespace fengine {
 				auto* mesh = m_ecs.try_get<RenderId>(m_selectedEntity);
 				if (mesh != nullptr) {
 					auto& render = m_rendererResources.getRenderObject(mesh->id);
-					render.transform.translation = transform->translation;
+					render.transform.translation = transform->position;
 					render.transform.rotation = transform->rotation;
 					render.transform.scale = transform->scale;
 				}

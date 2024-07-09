@@ -7,6 +7,8 @@
 #include "entt/entt.hpp"
 #include "components/transform.h"
 
+#include "physics/PhysicsSystem.h"
+
 namespace fengine {
 	class TestScript : public Script
 	{
@@ -33,7 +35,6 @@ namespace fengine {
 		}
 
 		void Update() override {
-
 		}
 
 	private:

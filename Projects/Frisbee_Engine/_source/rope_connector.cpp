@@ -24,20 +24,22 @@ namespace fengine {
 			render.modelId = 2;
 			auto renderId = m_rendererResources.addRenderObject(std::move(render));
 			m_ecs.emplace<RenderId>(e, renderId);
+			m_ecs.emplace<PhysicsSphere>(e, 0.5f);
 		}
 		{
 			auto e = m_ecs.create();
-			m_ecs.emplace<Transform>(e).translation = { -5.0f, 0.0f, 0.0f };
+			m_ecs.emplace<Transform>(e).position = { -5.0f, 0.0f, 0.0f };
 			m_ecs.emplace<Pin>(e, 0);
 			RenderObject render = RenderObject();
 			render.shaderId = 0;
 			render.modelId = 2;
 			auto renderId = m_rendererResources.addRenderObject(std::move(render));
 			m_ecs.emplace<RenderId>(e, renderId);
+			m_ecs.emplace<PhysicsSphere>(e, 0.5f);
 		}
 		{
 			auto e = m_ecs.create();
-			m_ecs.emplace<Transform>(e).translation = { 0.0f, -5.0f, 0.0f };
+			m_ecs.emplace<Transform>(e).position = { 0.0f, -5.0f, 0.0f };
 			m_ecs.emplace<Pin>(e, 0);
 			RenderObject render = RenderObject();
 			render.shaderId = 0;
@@ -45,7 +47,13 @@ namespace fengine {
 			auto renderId = m_rendererResources.addRenderObject(std::move(render));
 			m_rendererResources.getRenderObject(renderId).transform.translation = { 0.0f, -5.0f, 0.0f };
 			m_ecs.emplace<RenderId>(e, renderId);
+			m_ecs.emplace<PhysicsSphere>(e, 0.5f);
 		}
+
+		auto e = m_ecs.create();
+		m_ecs.emplace<Transform>(e).position = { 0.0f, 0.0f, 0.0f };
+		m_ecs.emplace<RenderId>(e, activeRopeID);
+		m_ecs.emplace<PhysicsCapsule>(e, glm::vec3(0.0f, -5.0f, 0.0f), 0.5f);
 	}
 
 	void RopeConnector::Update() 
@@ -67,40 +75,46 @@ namespace fengine {
 		float planeZ = 0.0f;
 		float t = (planeZ - mouseWorldPos.z) / direction.z;
 
+		//auto entities = ps.lineCast(camPos, rayEnd);
+		//if (entities.size() > 0) {
+		//	LOG_DEBUG(m_ecs.get<Transform>(entities[0]).position.x);
+		//}
+
+		auto test = ps.lineCast(camPos, rayEnd);
+
 		if (t >= 0) {
 			glm::vec3 intersectionPoint = mouseWorldPos + t * direction;
-			if (!hasActiveRope) {
 
-				if (m_input.getMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-					RayCast raycast{};
-					auto view = m_ecs.view<Transform, Pin>();
-					for (auto& entity : view) {
-						auto transform = m_ecs.get<Transform>(entity);
-						PhysicsSphere sphere{ transform.translation, 1.0f };
-						if (raycast.castLine(&sphere, camPos, rayEnd))
-						{
-							LOG_DEBUG("collision!\n");
-							hasActiveRope = true;
-							activeRopeID = _createRope();
-							_handleRope(activeRopeID, glm::vec3{}, intersectionPoint);
-							break;
-						}
-					}
+			if (!hasActiveRope && m_input.getMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+				auto entites = ps.lineCast(camPos, rayEnd);
+				if (entites.size() > 0) {
+					activeRopeID = _createRope();
+					m_startPos = m_ecs.get<Transform>(entites[0]).position;
+					_handleRope(activeRopeID, m_startPos, intersectionPoint);
+					hasActiveRope = true;
 				}
 			}
-			else if (m_input.getMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE) {
-				m_rendererResources.removeRenderObject(activeRopeID);
+			else if (hasActiveRope && m_input.getMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
+			{
+				auto entities = ps.lineCast(camPos, rayEnd);
+				if (entities.size() > 0) {
+					auto endPos = m_ecs.get<Transform>(entities[0]).position;
+					_handleRope(activeRopeID, m_startPos, endPos);
+				}
+				else {
+					m_rendererResources.removeRenderObject(activeRopeID);
+				}
 				hasActiveRope = false;
 			}
-			else {
-				_handleRope(activeRopeID, glm::vec3{}, intersectionPoint);
+			else if(hasActiveRope) {
+				_handleRope(activeRopeID, m_startPos, intersectionPoint);
 			}
 		}
 	}
 
 	void RopeConnector::_handleRope(uint32_t ropeRenderID, glm::vec3 start, glm::vec3 end) 
 	{
-		float s = 0.75f / 2;
+		float s = 0.15f;
 
 		glm::vec3 direction = glm::normalize(end - start);
 		glm::vec3 perpendicular = glm::vec3(direction.y, -direction.x, 0);
@@ -147,6 +161,7 @@ namespace fengine {
 		rope.shaderId = 1;
 		rope.modelId = m_rendererResources.createModel(vertices);
 		activeRopeID = m_rendererResources.addRenderObject(std::move(rope));
+
 		return activeRopeID; 
 	}
 }

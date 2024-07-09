@@ -10,6 +10,8 @@
 #include "screen.h"
 #include "renderer_resources.h"
 
+#include "physics/PhysicsSystem.h"
+
 #include "entt/entt.hpp"
 
 namespace fengine {
@@ -27,12 +29,13 @@ namespace fengine {
 		Screen& m_screen;
 		RendererResources& m_rendererResources;
 
+		glm::vec3 m_startPos{};
 		void _handleRope(uint32_t ropeRenderID, glm::vec3 start, glm::vec3 end);
 		uint32_t _createRope();
 
-		PhysicsSphere physicsSphere{ glm::vec3{-5.0, 0.0, 0.0}, 0.5 };
+		physics::PhysicsSystem ps{m_ecs};
 
 		bool hasActiveRope = false;
-		uint32_t activeRopeID;
+		uint32_t activeRopeID{};
 	};
 }
