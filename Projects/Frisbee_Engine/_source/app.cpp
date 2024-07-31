@@ -38,14 +38,14 @@ namespace fengine {
 		auto& globalData = GlobalData::getInstance();
 		globalData.fps = 0;
 
-		for (auto& script : m_scripts) {
+		for (const auto& script : m_scripts) {
 			script->Start();
 		}
 
 		while (!m_window.shouldClose()) {
 			glfwPollEvents();
 
-			for (auto& script : m_scripts) {
+			for (const auto& script : m_scripts) {
 				script->Update();
 			}
 
@@ -69,14 +69,14 @@ namespace fengine {
 		auto& globalData = GlobalData::getInstance();
 
 		// Loop Timing
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		float frameTime = std::chrono::duration<float, std::chrono::seconds::period>
+		const auto currentTime = std::chrono::high_resolution_clock::now();
+		const float frameTime = std::chrono::duration<float, std::chrono::seconds::period>
 			(currentTime - lastFrameTime).count();
 		LoopTime::setDeltaTime(frameTime);
 
 		// FpsCounter
-		auto diff = currentTime - lastSecondTimePoint;
-		if (std::chrono::duration_cast<std::chrono::milliseconds>(diff).count() >= 1000)
+		if (const auto diff = currentTime - lastSecondTimePoint;
+			std::chrono::duration_cast<std::chrono::milliseconds>(diff).count() >= 1000)
 		{
 			globalData.fpsQueue.push(fpsCounter);
 			if (globalData.fpsQueue.size() > 10)

@@ -5,22 +5,22 @@
 
 namespace pin {
 
-	const Pin& Board::addPin(PinType type)
+	Pin Board::addPin(PinType type)
 	{
 		assert(type != Invalid && "Cannot add pin of Invalid!");
 
 		if (type < 100) {
-			Pin pin = Pin(type, pins_[type].size());
+			auto pin = Pin(type, pins_[type].size());
 			pins_[type].push_back(0);
 			return pin;
 		}
 		else if (type == White) {
-			Pin pin = Pin(type, whites_.size());
+			auto pin = Pin(type, whites_.size());
 			whites_.push_back(std::vector<Pin>());
 			return pin;
 		}
 
-		Pin pin = Pin(Invalid, 0);
+		auto pin = Pin(Invalid, 0);
 		return pin;
 	}
 
@@ -66,6 +66,8 @@ namespace pin {
 		auto ropeType = checkRopeType(a, b);
 		assert(ropeType != Invalid && "Cannot create a rope with an invalid type");
 
+		std::cout << "addedRope!\n";
+
 		if (ropeType < 100) {
 			pins_[static_cast<int>(a.type_)][a.id_] += 1;
 			pins_[static_cast<int>(b.type_)][b.id_] += 1;
@@ -95,7 +97,7 @@ namespace pin {
 			}
 		}
 
-		//std::cout << "Solved!\n";
+		std::cout << "Solved!\n";
 		return true;
 	}
 
@@ -137,22 +139,22 @@ namespace pin {
 
 	void Board::_whiteDisconnectPin(const Pin& w_pin, const Pin& o_pin)
 	{
-		if (w_pin.type_ != White)
-			return;
-		
-		auto it = std::find(whites_[w_pin.id_].begin(), whites_[w_pin.id_].end(), o_pin);
-		assert(it != whites_[w_pin.id_].end() && "Cannot remove a white disconnect a pin that wasn't connected");
-		
-		if (whites_[w_pin.id_].size() > 2) {
-			pins_[o_pin.type_][o_pin.id_] -= 1;
-		}
-		else {
-			for (auto& pin : whites_[w_pin.id_]) {
-				pins_[pin.type_][pin.id_] -= 1;
-			}
-		}
-		
-		whites_[w_pin.id_].erase(std::remove(whites_[w_pin.id_].begin(), whites_[w_pin.id_].end(), o_pin), whites_[w_pin.id_].end());
+		// if (w_pin.type_ != White)
+		// 	return;
+		//
+		// auto it = std::find(whites_[w_pin.id_].begin(), whites_[w_pin.id_].end(), o_pin);
+		// assert(it != whites_[w_pin.id_].end() && "Cannot remove a white disconnect a pin that wasn't connected");
+		//
+		// if (whites_[w_pin.id_].size() > 2) {
+		// 	pins_[o_pin.type_][o_pin.id_] -= 1;
+		// }
+		// else {
+		// 	for (auto& pin : whites_[w_pin.id_]) {
+		// 		pins_[pin.type_][pin.id_] -= 1;
+		// 	}
+		// }
+		//
+		// whites_[w_pin.id_].erase(std::remove(whites_[w_pin.id_].begin(), whites_[w_pin.id_].end(), o_pin), whites_[w_pin.id_].end());
 	}
 
 	void Board::_printPins()

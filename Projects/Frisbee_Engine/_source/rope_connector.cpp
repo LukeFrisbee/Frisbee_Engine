@@ -12,35 +12,41 @@
 
 #include "logger.h"
 
+#include "board.h"
+
 namespace fengine {
 	void RopeConnector::Start() 
 	{
 		{
-			auto e = m_ecs.create();
+			entt::entity e = m_ecs.create();
 			m_ecs.emplace<Transform>(e);
-			m_ecs.emplace<Pin>(e, 0);
-			RenderObject render = RenderObject();
+			//m_ecs.emplace<Pin>(e, 0);
+			auto render = RenderObject();
 			render.shaderId = 0;
 			render.modelId = 2;
 			auto renderId = m_rendererResources.addRenderObject(std::move(render));
-			m_ecs.emplace<RenderId>(e, renderId);
 			m_ecs.emplace<PhysicsSphere>(e, 0.5f);
+			m_ecs.emplace<RenderId>(e, renderId);
+			const pin::Pin& pin = m_board.addPin(pin::PinType::Blue);
+			m_ecs.emplace<Pin>(e, pin);
 		}
 		{
 			auto e = m_ecs.create();
 			m_ecs.emplace<Transform>(e).position = { -5.0f, 0.0f, 0.0f };
-			m_ecs.emplace<Pin>(e, 0);
+			//m_ecs.emplace<Pin>(e, 0);
 			RenderObject render = RenderObject();
 			render.shaderId = 0;
 			render.modelId = 2;
 			auto renderId = m_rendererResources.addRenderObject(std::move(render));
 			m_ecs.emplace<RenderId>(e, renderId);
 			m_ecs.emplace<PhysicsSphere>(e, 0.5f);
+			const pin::Pin& pin = m_board.addPin(pin::PinType::Blue);
+			m_ecs.emplace<Pin>(e, pin);
 		}
 		{
 			auto e = m_ecs.create();
 			m_ecs.emplace<Transform>(e).position = { 0.0f, -5.0f, 0.0f };
-			m_ecs.emplace<Pin>(e, 0);
+			//m_ecs.emplace<Pin>(e, 0);
 			RenderObject render = RenderObject();
 			render.shaderId = 0;
 			render.modelId = 2;
@@ -48,6 +54,8 @@ namespace fengine {
 			m_rendererResources.getRenderObject(renderId).transform.translation = { 0.0f, -5.0f, 0.0f };
 			m_ecs.emplace<RenderId>(e, renderId);
 			m_ecs.emplace<PhysicsSphere>(e, 0.5f);
+			const pin::Pin& pin = m_board.addPin(pin::PinType::Blue);
+			m_ecs.emplace<Pin>(e, pin);
 		}
 
 		auto e = m_ecs.create();
@@ -86,18 +94,23 @@ namespace fengine {
 			glm::vec3 intersectionPoint = mouseWorldPos + t * direction;
 
 			if (!hasActiveRope && m_input.getMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-				auto entites = ps.lineCast(camPos, rayEnd);
-				if (entites.size() > 0) {
+				if (auto entites = ps.lineCast(camPos, rayEnd);
+					!entites.empty()) {
 					activeRopeID = _createRope();
 					m_startPos = m_ecs.get<Transform>(entites[0]).position;
+					//*p_pin = m_ecs.get<Pin>(entites[0]).pin;
 					_handleRope(activeRopeID, m_startPos, intersectionPoint);
 					hasActiveRope = true;
 				}
 			}
 			else if (hasActiveRope && m_input.getMouseButton(GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
 			{
-				auto entities = ps.lineCast(camPos, rayEnd);
-				if (entities.size() > 0) {
+				if (auto entities = ps.lineCast(camPos, rayEnd);
+					!entities.empty()) // && p_pin != nullptr)
+				{
+					//pin::Pin endPin = m_ecs.get<Pin>(entities[0]).pin;
+					//m_board.addRope(*p_pin, endPin);
+
 					auto endPos = m_ecs.get<Transform>(entities[0]).position;
 					_handleRope(activeRopeID, m_startPos, endPos);
 				}
@@ -112,8 +125,7 @@ namespace fengine {
 		}
 	}
 
-	void RopeConnector::_handleRope(uint32_t ropeRenderID, glm::vec3 start, glm::vec3 end) 
-	{
+	void RopeConnector::_handleRope(uint32_t ropeRenderID, glm::vec3 start, glm::vec3 end) const {
 		float s = 0.15f;
 
 		glm::vec3 direction = glm::normalize(end - start);
@@ -123,10 +135,10 @@ namespace fengine {
 		glm::vec3 fld = start + (s * perpendicular);
 		glm::vec3 fru = end + (s * -perpendicular);
 		glm::vec3 frd = end + (s * perpendicular);
-		glm::vec3 blu = start + (s * -perpendicular);
-		glm::vec3 bld = start + (s * perpendicular);
-		glm::vec3 bru = end + (s * -perpendicular);
-		glm::vec3 brd = end + (s * perpendicular);
+		// glm::vec3 blu = start + (s * -perpendicular);
+		// glm::vec3 bld = start + (s * perpendicular);
+		// glm::vec3 bru = end + (s * -perpendicular);
+		// glm::vec3 brd = end + (s * perpendicular);
 
 		std::vector<glm::vec3> vertices = {
 			fld, flu, frd, flu, fru, frd

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "board.h"
+
 namespace fengine {
     struct Name {
         std::string name = "_";
@@ -22,7 +24,7 @@ namespace fengine {
     };
 
     struct Pin {
-        int color = 0;
+        pin::Pin pin;
     };
 
     struct PhysicsSphere {

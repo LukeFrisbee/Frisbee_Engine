@@ -67,7 +67,7 @@ namespace pin {
 	public:
 		Board() {};
 
-		const Pin& addPin(PinType type);
+		Pin addPin(PinType type);
 
 		PinType checkRopeType(const Pin& a, const Pin& b);
 		std::list<Rope>::const_iterator addRope(Pin& a, Pin& b);

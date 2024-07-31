@@ -21,7 +21,7 @@ namespace fengine {
 			RenderSystem(const RenderSystem&) = delete;
 			RenderSystem& operator=(const RenderSystem&) = delete;
 
-			void renderGameObjects(FrameInfo& frameInfo);
+			void renderGameObjects(const FrameInfo& frameInfo) const;
 
 		private:
 

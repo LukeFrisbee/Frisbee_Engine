@@ -22,7 +22,7 @@ namespace fengine {
 		//createShader("shaders/pbr.vert.spv", "shaders/pbr.frag.spv", settings);
 	}
 
-	void RenderSystem::renderGameObjects(FrameInfo& frameInfo)
+	void RenderSystem::renderGameObjects(const FrameInfo& frameInfo) const
 	{
 		auto& gd = GlobalData::getInstance();
 
@@ -31,7 +31,6 @@ namespace fengine {
 		ubo.camPos = frameInfo.camera.getPosition();
 		ubo.lightPos = gd.lightPos;
 
-		static float color = 0.0f;
 		for (auto& obj : m_resources.m_renderObjects)
 		{
 			// TODO: This should be handeled per shader, not per gameobject (Material Instancing)

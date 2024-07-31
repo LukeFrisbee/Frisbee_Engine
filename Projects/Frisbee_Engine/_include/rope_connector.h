@@ -13,6 +13,7 @@
 #include "physics/PhysicsSystem.h"
 
 #include "entt/entt.hpp"
+#include "board.h"
 
 namespace fengine {
 	class RopeConnector : public Script {
@@ -23,6 +24,8 @@ namespace fengine {
 		void Update() override;
 
 	private:
+		pin::Board m_board{};
+
 		entt::registry& m_ecs;
 		Camera& m_camera;
 		Input& m_input;
@@ -30,7 +33,9 @@ namespace fengine {
 		RendererResources& m_rendererResources;
 
 		glm::vec3 m_startPos{};
-		void _handleRope(uint32_t ropeRenderID, glm::vec3 start, glm::vec3 end);
+		pin::Pin* p_pin;
+
+		void _handleRope(uint32_t ropeRenderID, glm::vec3 start, glm::vec3 end) const;
 		uint32_t _createRope();
 
 		physics::PhysicsSystem ps{m_ecs};
