@@ -137,22 +137,22 @@ namespace pin {
 
 	void Board::_whiteDisconnectPin(const Pin& w_pin, const Pin& o_pin)
 	{
-		if (w_pin.type_ != White)
-			return;
-		
-		auto it = std::find(whites_[w_pin.id_].begin(), whites_[w_pin.id_].end(), o_pin);
-		assert(it != whites_[w_pin.id_].end() && "Cannot remove a white disconnect a pin that wasn't connected");
-		
-		if (whites_[w_pin.id_].size() > 2) {
-			pins_[o_pin.type_][o_pin.id_] -= 1;
-		}
-		else {
-			for (auto& pin : whites_[w_pin.id_]) {
-				pins_[pin.type_][pin.id_] -= 1;
-			}
-		}
-		
-		whites_[w_pin.id_].erase(std::remove(whites_[w_pin.id_].begin(), whites_[w_pin.id_].end(), o_pin), whites_[w_pin.id_].end());
+		// if (w_pin.type_ != White)
+		// 	return;
+		//
+		// auto it = std::find(whites_[w_pin.id_].begin(), whites_[w_pin.id_].end(), o_pin);
+		// assert(it != whites_[w_pin.id_].end() && "Cannot remove a white disconnect a pin that wasn't connected");
+		//
+		// if (whites_[w_pin.id_].size() > 2) {
+		// 	pins_[o_pin.type_][o_pin.id_] -= 1;
+		// }
+		// else {
+		// 	for (auto& pin : whites_[w_pin.id_]) {
+		// 		pins_[pin.type_][pin.id_] -= 1;
+		// 	}
+		// }
+		//
+		// whites_[w_pin.id_].erase(std::remove(whites_[w_pin.id_].begin(), whites_[w_pin.id_].end(), o_pin), whites_[w_pin.id_].end());
 	}
 
 	void Board::_printPins()

@@ -36,9 +36,6 @@ namespace fengine {
 		auto& globalData = GlobalData::getInstance();
 		globalData.fps = 0;
 
-		m_camera.setPosition(glm::vec3(-5.0f, -1.0f, 0.0f));
-		//m_camera.setViewDirection(glm::vec3{}, glm::vec3(0.0f, 0.0f, 0.5f));
-
 		for (auto& script : m_scripts) {
 			script->Start();
 		}

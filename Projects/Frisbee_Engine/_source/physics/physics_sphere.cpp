@@ -2,6 +2,7 @@
 #include "physics/physics_pool.h"
 
 #include <math.h>
+#include "algorithm"
 
 namespace fengine {
 	PhysicsSphere::PhysicsSphere(glm::vec3 position, float radius) 

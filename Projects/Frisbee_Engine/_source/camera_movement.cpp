@@ -9,7 +9,7 @@
 namespace fengine {
 
 	void CameraMovement::Start() {
-
+		m_transform.translation = glm::vec3(0.0f, -2.0f, -5.0f);
 	}
 
 	void CameraMovement::Update() {

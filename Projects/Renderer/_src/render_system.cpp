@@ -29,7 +29,8 @@ namespace fengine {
 		uboGlobal ubo{};
 		ubo.projectionViewMatrix = frameInfo.camera.getProjection() * frameInfo.camera.getView();
 		ubo.camPos = frameInfo.camera.getPosition();
-		ubo.lightPos = gd.lightPos;
+
+		ubo.lightPos = m_resources.m_renderObjects[1].transform.translation;
 
 		static float color = 0.0f;
 		for (auto& obj : m_resources.m_renderObjects)

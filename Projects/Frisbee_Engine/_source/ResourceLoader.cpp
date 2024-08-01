@@ -67,12 +67,12 @@ namespace fengine {
 			cube.modelId = cubeId;
 			//Shader::Settings shaderSettings{};
 			cube.shaderId = albedoShaderID;
-			cube.transform.translation = { 0.0f, 0.0f, 0.0f };
+			cube.transform.translation = { 1.0f, -3.0f, -1.0f };
 			GlobalData::getInstance().lightPos = cube.transform.translation;
 			cube.transform.scale = { 0.25f, 0.25f, 0.25f };
 
 			auto id = m_rendererResources.addRenderObject(std::move(cube));
-			editorUI.LinkRenderObject(id, "Cube");
+			editorUI.LinkRenderObject(id, "Light");
 		}
 
 		// PBR CUBE
@@ -82,7 +82,7 @@ namespace fengine {
 			cube.modelId = cubeId;
 			//Shader::Settings shaderSettings{};
 			cube.shaderId = pbrShaderID;
-			cube.transform.translation = { 1.0f, -3.0f, -1.0f };
+			cube.transform.translation = { 0.0f, 0.0f, 0.0f };
 			GlobalData::getInstance().lightPos = cube.transform.translation;
 			cube.transform.scale = { 0.5f, 0.5f, 0.5f };
 
@@ -93,7 +93,6 @@ namespace fengine {
 			auto id = m_rendererResources.addRenderObject(std::move(cube));
 			editorUI.LinkRenderObject(id, "Cube");
 		}
-
 
 		// Sphere
 		{

@@ -29,7 +29,7 @@ namespace fengine {
 
 		if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
 		{
-			throw std::runtime_error("Failed to acquire swap chain image!");
+			throw std::runtime_error("Failed to acquire swap chain image");
 		}
 
 		m_isFrameStarted = true;
